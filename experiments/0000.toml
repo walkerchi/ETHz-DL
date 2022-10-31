@@ -1,0 +1,19 @@
+# Small and big CLIP from huggingface
+
+type = 'evaluate'
+dataset = 'MSCOCO'
+big_model = 'CLIP'
+small_model = 'CLIP'
+top_k_small_preds_refine = 50
+which_top_k_accs = [1, 5, 10]
+seed = 123456789
+logging_level = 'INFO'
+
+[dataset_args]
+n_samples = 5000
+
+[big_model_args]
+size = 'big'
+
+[small_model_args]
+size = 'small'

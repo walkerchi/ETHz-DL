@@ -1,0 +1,7 @@
+.ipynb_checkpoints
+*__pycache__
+datasets/mscoco/annotations_trainval2017
+datasets/mscoco/val2017
+**.zip
+experiments/*/
+*test.ipynb

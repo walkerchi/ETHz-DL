@@ -1,0 +1,20 @@
+# CLIP from OpenAI Github repository, ResNet vision model.
+
+type = 'evaluate'
+dataset = 'MSCOCO'
+big_model = 'CLIP'
+small_model = 'CLIPOpenAI'
+top_k_small_preds_refine = 20
+which_top_k_accs = [1, 5, 10]
+seed = 123456789
+logging_level = 'INFO'
+eval_only_small_model = true
+
+[dataset_args]
+n_samples = 5000
+
+[big_model_args]
+size = 'big'
+
+[small_model_args]
+model_str = "RN50x64" # "ViT-B/32"
