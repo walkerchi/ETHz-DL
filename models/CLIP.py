@@ -1,9 +1,9 @@
 from tqdm import tqdm
-
+from importlib import import_module
 from transformers import CLIPProcessor, CLIPModel, CLIPTokenizer
 
 class CLIP():
-    def __init__(self, size):
+    def __init__(self, size, pruning_version=None):
         if size == 'big':
             model_str = "openai/clip-vit-large-patch14"
         elif size == 'small':
@@ -11,8 +11,14 @@ class CLIP():
         else:
             raise Exception(f"Unkown size '{size}'.")
         self.tokenizer = CLIPTokenizer.from_pretrained(model_str)
-        self.model = CLIPModel.from_pretrained(model_str)
         self.processor = CLIPProcessor.from_pretrained(model_str)
+        if pruning_version:
+            path = '.pruned.' + pruning_version
+            pruned = import_module(path, 'models')
+            self.model = pruned.CLIPModel_pruned.from_pretrained(model_str)
+        else:
+            self.model = CLIPModel.from_pretrained(model_str)
+
 
     def img_vecs(self, imgs):
         img_vecs = []

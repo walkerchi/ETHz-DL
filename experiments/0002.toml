@@ -1,14 +1,13 @@
-# CLIP from OpenAI Github repository, ResNet vision model.
+# Small and big CLIP from huggingface
 
 type = 'evaluate'
 dataset = 'MSCOCO'
 big_model = 'CLIP'
-small_model = 'CLIPOpenAI'
-top_k_small_preds_refine = 20
+small_model = 'CLIP'
+top_k_small_preds_refine = 50
 which_top_k_accs = [1, 5, 10]
 seed = 123456789
 logging_level = 'INFO'
-eval_only_small_model = true
 
 [dataset_args]
 n_samples = 50
@@ -17,4 +16,5 @@ n_samples = 50
 size = 'big'
 
 [small_model_args]
-model_str = "RN50x64" # "ViT-B/32"
+size = 'small'
+pruning_version = 'v0'
