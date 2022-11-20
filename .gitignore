@@ -1,0 +1,14 @@
+__pycache__
+.ckpt
+.coco
+.dataset
+.log
+.transformer
+.mobilenet/project.pt
+.mobilenet/project_1.pt 
+.mobilenet/project_2.pt
+distill.ipynb
+timer
+test*
+distill_scr.py 
+distill_cos_.py
