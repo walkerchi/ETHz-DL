@@ -5,3 +5,7 @@ datasets/mscoco/val2017
 **.zip
 experiments/*/
 *test.ipynb
+models/pruned/v1_post_training_pruning/retraining-free-pruning/dataset/val2017
+models/pruned/v1_post_training_pruning/retraining-free-pruning/dataset/annotations_trainval2017
+
+
