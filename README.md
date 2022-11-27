@@ -108,9 +108,9 @@ top3
 
 $$
 \begin{aligned}
-knn^{\mathcal T}_{i} &= \left\{j| \mathop{topk}\limits_j(-distance(h^{\mathcal T}_j,h^{\mathcal T}_i))\right\}
+knn^{\mathcal T}_{i} &= \\{j| \mathop{topk}\limits_j(-distance(h^{\mathcal T}_j,h^{\mathcal T}_i))\\}
 \\
-knn^{\mathcal V}_i &= \left\{j|\mathop{topk}\limits_{j}(-distance(h^{\mathcal V}_j,h^{\mathcal T}_i))\right\}
+knn^{\mathcal V}_i &= \\{j|\mathop{topk}\limits_{j}(-distance(h^{\mathcal V}_j,h^{\mathcal T}_i))\\}
 \\
 kimi_i &= \frac{|knn^{\mathcal T}_i\cap knn^{\mathcal V}_j|}{|knn^{\mathcal T}_i\cup knn_i^{\mathcal V}|}
 \end{aligned}
