@@ -6,7 +6,7 @@ from tqdm import tqdm
 from typing import List,Union
 from transformers import CLIPProcessor, CLIPModel 
 
-from dataset import PILImage,ImageFolderLoader
+from dataset import PILImage,ImageLoader
 
 
 class MobileNetImageEncoder(nn.Module):
@@ -95,69 +95,95 @@ class CLIPBase(nn.Module):
         x = self.processor(text=texts, return_tensors="pt",padding=True)
         return x['input_ids'].to(self.device), \
                 x['attention_mask'].to(self.device)
-    def indices_to_images(self, indices:torch.Tensor, images:Union[ImageFolderLoader,List[PILImage]]):
+    def indices_to_images(self, indices:torch.Tensor, images:Union[torch.utils.data.DataLoader,List[PILImage]]):
         n_images, n_texts = indices.shape
         results = [[] for _ in range(n_texts)]
         for i in range(n_images):
             for j in range(n_texts):
-                if isinstance(images, ImageFolderLoader):
+                if isinstance(images, torch.utils.data.DataLoader):
                     results[j].append(images.dataset[indices[i,j]])
                 else:
                     results[j].append(images[indices[i,j]])
         return results
-    def text_encode(self, texts:List[str]):
-        texts_th, mask = self.preprocess_text(texts)
-        texts_emb = self.text_encoder(texts_th, mask)
+    def text_encode(self, texts:Union[torch.utils.data.DataLoader,List[str]], verbose:bool=False):
+        if isinstance(texts, torch.utils.data.DataLoader):
+            texts_emb = []
+            if verbose:
+                texts = tqdm(texts, desc="Text Encode", total=len(texts))
+            for batch in texts:
+                texts_th, mask = self.preprocess_text(batch)
+                texts_emb.append(self.text_encoder(texts_th, mask).cpu())
+            texts_emb = torch.cat(texts_emb, 0)
+        else:
+            texts_th, mask = self.preprocess_text(texts)
+            texts_emb = self.text_encoder(texts_th, mask).cpu()
         return texts_emb
 
 class CLIP(CLIPBase):
     def __init__(self, transformer_path:str="./.transformer/clip-vit-base-patch32"):
         super().__init__(transformer_path)
         self.image_encoder = CLIPImageEncoder(transformer_path)
-    def image_encode(self, images:Union[ImageFolderLoader,List[PILImage]],verbose:bool=False):
-        if isinstance(images, ImageFolderLoader):
+    def image_encode(self, images:Union[torch.utils.data.DataLoader,List[PILImage]],verbose:bool=False):
+        if isinstance(images, torch.utils.data.DataLoader):
             l_batch_images_emb = []
             if verbose:
                 images = tqdm(images,desc="Image Encoding", total=len(images))
             for batch_images in images:
                 batch_images_th = self.preprocess_image(batch_images)
-                batch_images_emb= self.image_encoder(batch_images_th)
+                batch_images_emb= self.image_encoder(batch_images_th).cpu()
                 l_batch_images_emb.append(batch_images_emb)
             images_emb = torch.cat(l_batch_images_emb, 0)
         else:
             images_th  = self.preprocess_image(images)
-            images_emb = self.image_encoder(images_th)
+            images_emb = self.image_encoder(images_th).cpu()
         return images_emb
     def topk_images(self,
                     images:Union[torch.utils.data.DataLoader,List[PILImage]], 
-                    texts:List[str], 
+                    texts:Union[torch.utils.data.DataLoader,List[str]], 
                     topk:int=1,
-                    verbose:bool=False)->List[List[PILImage]]:
+                    return_index:bool=False,
+                    return_text_emb:bool=False,
+                    verbose:bool=False)->Union[List[List[PILImage]],torch.LongTensor]:
         """
             Parameters
             ----------
                 image:      torch.utils.data.DataLoader->List[PIL.Image] or List[PIL.Image]
-                texts:      List[str]
+                texts:      torch.utils.data.DataLoader->List[str] or List[str]
                 topk:       int
+                return_index:bool       default:False
+                            whether return the index of the image 
+                            or the PIL.Image of the indexed Image
+                return_text_emb:bool    default:False
+                            whether return the embedding of the text
             Returns
             -------
                 List[List[PIL.Image]]   [n_text,[topk,[PIL.Image]]]
         """
         if verbose:
-            print("Text Encoding")
-        texts_emb           = self.text_encode(texts)
-        if verbose:
             print("Image Encoding...")
         images_emb          = self.image_encode(images,verbose)
+        if verbose:
+            print("Text Encoding")
+        texts_emb           = self.text_encode(texts, verbose)
+        
         image_per_text      = images_emb @ texts_emb.T
         topk_indices        = image_per_text.topk(topk, dim=0).indices
-        return self.indices_to_images(topk_indices, images)
+        if return_index:
+            if return_text_emb:
+                return topk_indices.T, texts_emb
+            else:
+                return topk_indices.T
+        else:
+            if return_text_emb:
+                return self.indices_to_images(topk_indices, images), texts_emb
+            else:
+                return self.indices_to_images(topk_indices, images)
 
 
 
 class CascadeCLIP(CLIPBase):
-    def __init__(self, n_layers:int, 
-                    mobilenet_projection_path:str,
+    def __init__(self, n_layers:int = 2, 
+                    mobilenet_projection_path:str = "./.mobilenet/project_coco_train_ep1_ly2.pt",
                     mobilenet_path:str="./.mobilenet",
                     transformer_path:str="./.transformer/clip-vit-base-patch32"):
         super().__init__(transformer_path)
@@ -165,41 +191,41 @@ class CascadeCLIP(CLIPBase):
         self.small_image_encoder.load(mobilenet_projection_path)
         self.large_image_encoder  = CLIPImageEncoder(transformer_path)
     
-    def small_image_encode(self, images:Union[ImageFolderLoader,List[PILImage]],verbose:bool=False):
-        if isinstance(images, ImageFolderLoader):
+    def small_image_encode(self, images:Union[torch.utils.data.DataLoader,List[PILImage]],verbose:bool=False):
+        if isinstance(images, torch.utils.data.DataLoader):
             l_batch_images_emb = []
             if verbose:
                 images = tqdm(images, desc="Small Image Encoder:")
             for batch_images in images:
                 batch_images_th = self.preprocess_image(batch_images)
-                batch_images_emb= self.small_image_encoder(batch_images_th)
+                batch_images_emb= self.small_image_encoder(batch_images_th).cpu()
                 l_batch_images_emb.append(batch_images_emb)
             images_emb = torch.cat(l_batch_images_emb, 0)
         else:
             images_th  = self.preprocess_image(images)
             images_emb = self.small_image_encoder(images_th)
         return images_emb
-    def large_image_encode(self, images:Union[ImageFolderLoader,List[PILImage]],verbose:bool=False):
-        if isinstance(images, ImageFolderLoader):
+    def large_image_encode(self, images:Union[torch.utils.data.DataLoader,List[PILImage]],verbose:bool=False):
+        if isinstance(images, torch.utils.data.DataLoader):
             l_batch_images_emb = []
             if verbose:
                 images = tqdm(images, desc="Large Image Encoder")
             for batch_images in images:
                 batch_images_th = self.preprocess_image(batch_images)
-                batch_images_emb= self.large_image_encoder(batch_images_th)
+                batch_images_emb= self.large_image_encoder(batch_images_th).cpu()
                 l_batch_images_emb.append(batch_images_emb)
             images_emb = torch.cat(l_batch_images_emb, 0)
         else:
             images_th  = self.preprocess_image(images)
-            images_emb = self.large_image_encoder(images_th)
+            images_emb = self.large_image_encoder(images_th).cpu()
         return images_emb
 
     def filter_images(self, 
                         indices:torch.Tensor, 
-                        images:Union[ImageFolderLoader,List[PILImage]]):
+                        images:Union[torch.utils.data.DataLoader,List[PILImage]]):
         index = indices.unique().tolist()
         
-        if isinstance(images,ImageFolderLoader):
+        if isinstance(images,torch.utils.data.DataLoader):
             return images.subloader(index)
         else:
             new_images = []
@@ -207,18 +233,25 @@ class CascadeCLIP(CLIPBase):
                 new_images.append(images[i])
             return new_images
     def topk_images(self, 
-                    images:Union[ImageFolderLoader,List[PILImage]], 
-                    texts:List[str], 
+                    images:Union[torch.utils.data.DataLoader,List[PILImage]], 
+                    texts:Union[torch.utils.data.DataLoader, List[str]], 
                     topk:int=1, 
                     topm:int=20,
-                    verbose:bool=False)->List[List[PILImage]]:
+                    return_index:bool=False,
+                    return_text_emb:bool=False,
+                    verbose:bool=False)->Union[List[List[PILImage]],torch.LongTensor]:
         """
             Parameters
             ----------
-                images:     torch.FloatTensor[n_image,H,W]   
-                texts:      List[str][n_text]
+                image:      torch.utils.data.DataLoader->List[PIL.Image] or List[PIL.Image]
+                texts:      torch.utils.data.DataLoader->List[str] or List[str]
                 topk:       int
                 topm:       int topm>topk
+                return_index:bool
+                            whether return the index of the image 
+                            or the PIL.Image of the indexed Image
+                return_text_emb:bool    default:False
+                            whether return the embedding of the text
                 verbose:    bool
             Returns
             -------
@@ -226,7 +259,7 @@ class CascadeCLIP(CLIPBase):
         """
         if verbose:
             print("Text Encoding...")
-        texts_emb       = self.text_encode(texts)
+        texts_emb       = self.text_encode(texts, verbose)
         if verbose:
             print("Small Image Encoding...")
         images_emb      = self.small_image_encode(images,verbose)
@@ -241,12 +274,21 @@ class CascadeCLIP(CLIPBase):
         image_per_text  = images_emb @ texts_emb.T 
         topk_indices    = image_per_text.topk(topk, dim=0).indices
         topk_indices    = topm_indices.unique()[topk_indices]
-        return self.indices_to_images(topk_indices, images)
+        if return_index:
+            if return_text_emb:
+                return topk_indices.T, texts_emb
+            else:
+                return topk_indices.T
+        else:
+            if return_text_emb:
+                return self.indices_to_images(topk_indices, images), texts_emb
+            else:
+                return self.indices_to_images(topk_indices, images)
 
 
 if __name__ == '__main__':
-    from dataset import ImageFolderLoader
-    loader = ImageFolderLoader.from_dir("./.coco/val2017",batch_size=4)
+    from dataset import ImageLoader
+    loader = ImageLoader.from_dir("./.coco/val2017",batch_size=4)
     # model  = CLIP()
     model = CascadeCLIP(
         2,"./.mobilenet/project_coco_train_ep1_ly2.pt"

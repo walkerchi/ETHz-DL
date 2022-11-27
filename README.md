@@ -20,6 +20,22 @@ Finally, just see the `reference.ipynb` to see how to use the CascadeCLIP to boo
 
 By the way, the `script` directory is some command line script to run the file for either distilling or verifing
 
+**CLIP**
+$$
+H^{\mathcal T} = E^{\mathcal T}(X^{\mathcal T})\\
+H^{\mathcal V} = E^{\mathcal V}(X^{\mathcal V})\\
+\mathop{topk}\limits_{x^{\mathcal V}} (\frac{h^{\mathcal V}\cdot h^{\mathcal T}}{|h^{\mathcal V}||h^{\mathcal T}|})
+$$
+**CasCLIP**
+$$
+H^{\mathcal T} = E^{\mathcal T}(X^\mathcal T)\\
+\tilde H^{\mathcal V} = E^{\mathcal V}_{small}(X^\mathcal V)\\
+\mathop{topm}_{\tilde x^{\mathcal V}}(\frac{\tilde h^{\mathcal V}\cdot h^{\mathcal T}}{|\tilde h^{\mathcal V}||h^{\mathcal T}|})\\
+H^{\mathcal V} = E^{\mathcal V}_{large}(\tilde X^{\mathcal V})\\
+\mathop{topk}_{x^{\mathcal V}}(\frac{h^{\mathcal V}\cdot h^{\mathcal T}}{|h^{\mathcal V}||h^{\mathcal T}|})
+$$
+
+
 ## 3.Experiment
 
 ### 3.1 Verifying for Distilling on Cifar100
@@ -77,6 +93,31 @@ top2
 top3
 
 ![img](./.images/cas-clip-top3.png)
+
+## 3.3 Kimi(KNN-Similarity) metric
+
+$$
+knn^{\mathcal T}_{i} = \{j| \mathop{topk}_j(-distance(h^{\mathcal T}_j,h^{\mathcal T}_i))\}
+\\
+knn^{\mathcal V}_i = \{j|\mathop{topk}_{j}(-distance(h^{\mathcal V}_j,h^{\mathcal T}_i))\}
+\\
+kimi_i = \frac{|knn^{\mathcal T}_i\cap knn^{\mathcal V}_j|}{|knn^{\mathcal T}_i\cup knn_i^{\mathcal V}|}
+$$
+
+dataset: coco val
+
+topk: 25
+
+topm: 200
+
+| k    | CasCLIP | CLIP   |
+| ---- | ------- | ------ |
+| 5    | 0.0268  | 0.0304 |
+| 10   | 0.0815  | 0.1050 |
+| 15   | 0.1006  | 0.1363 |
+| 20   | 0.1123  | 0.1562 |
+| 25   | 0.1228  | 0.1736 |
+
 
 
 
