@@ -21,6 +21,8 @@ Finally, just see the `reference.ipynb` to see how to use the CascadeCLIP to boo
 By the way, the `script` directory is some command line script to run the file for either distilling or verifing
 
 **CLIP**
+
+
 $$
 \begin{aligned}
 H^{\mathcal T} &= E^{\mathcal T}(X^{\mathcal T})\\
@@ -28,7 +30,11 @@ H^{\mathcal V} &= E^{\mathcal V}(X^{\mathcal V})\\
 \mathop{topk}\limits_{x^{\mathcal V}}& (\frac{h^{\mathcal V}\cdot h^{\mathcal T}}{|h^{\mathcal V}||h^{\mathcal T}|})
 \end{aligned}
 $$
+
+
 **CasCLIP**
+
+
 $$
 \begin{aligned}
 H^{\mathcal T} &= E^{\mathcal T}(X^\mathcal T)\\
