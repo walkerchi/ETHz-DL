@@ -31,9 +31,7 @@ H^{\mathcal V} &= E^{\mathcal V}(X^{\mathcal V})\\
 \end{aligned}
 $$
 
-
 **CasCLIP**
-
 
 $$
 \begin{aligned}
@@ -110,7 +108,7 @@ $$
 \begin{aligned}
 knn^{\mathcal T}_{i} &= \\{j| \mathop{topk}\limits_j(-distance(h^{\mathcal T}_j,h^{\mathcal T}_i))\\}
 \\
-knn^{\mathcal V}_i &= \\{j|\mathop{topk}\limits_{j}(-distance(h^{\mathcal V}_j,h^{\mathcal T}_i))\\}
+knn^{\mathcal V}_{i} &= \\{j|\mathop{topk}\limits_j(-distance(h^{\mathcal V}_j,h^{\mathcal V}_i))\\}
 \\
 kimi_i &= \frac{|knn^{\mathcal T}_i\cap knn^{\mathcal V}_j|}{|knn^{\mathcal T}_i\cup knn_i^{\mathcal V}|}
 \end{aligned}
