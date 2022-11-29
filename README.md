@@ -129,7 +129,17 @@ topm: 200
 | 25   | 0.1228  | 0.1736 |
 
 
+## 4.4 Topk accuracy on COCO Val
 
+for each text, measure the topk metric for the images
+
+| k    | CasCLIP | CLIP   |
+| ---- | ------- | ------ |
+| 5    | 0.2612  | 0.5479 |
+| 10   | 0.3051  | 0.6608 |
+| 15   | 0.3272  | 0.7247 |
+| 20   | 0.3413  | 0.7690 |
+| 25   | 0.3514  | 0.8011 |  
 
  **reference**
 

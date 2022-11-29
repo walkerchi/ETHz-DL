@@ -101,52 +101,117 @@ class KNNSimilarityMetric:
         self.k = k
         self.verbose = verbose
     def __call__(self, image_knn:torch.LongTensor):
+        """
+            Parameters
+            ----------
+                image_knn:      torch.LongTensor [n_text, topk_image]
+                                topk_image should be greater than or equal to the `k`
+
+            Returns
+            -------
+                float:          the KNN-similarity metric score
+        """
         assert image_knn.shape[1] >= self.k, f"not enough k for image_knn, expected more than  {self.k}, but got {image_knn.shape[1]}"
         image_knn = image_knn[:, :self.k]
         assert self.text_knn.shape  == image_knn.shape
-        return jaccard_similarity(self.text_knn, image_knn, verbose=self.verbose)
+        return jaccard_similarity(self.text_knn, image_knn, verbose=self.verbose).item()
 
+
+class TopKMetric:
+    def __init__(self, text_mask:List[int], k:int = 5, verbose:bool=False):
+        self.text_mask = torch.tensor(text_mask).long()
+        self.k = k  
+    def __call__(self, image_topk:torch.LongTensor):
+        """
+            Parameters
+            ----------
+                image_topk:         torch.LongTensor[n_text, topk_image]
+            Returns
+            -------
+                float:              the topk metric score
+
+        """
+        assert image_topk.shape[1] >= self.k, f"not enough k for image_knn, expected more than  {self.k}, but got {image_topk.shape[1]}"
+        assert image_topk.shape[0] == len(self.text_mask), f"expect the number of image equals to the text_mask"
+        image_topk = image_topk[:, :self.k]
+        
+        topk_score = (image_topk == self.text_mask[:, None]).any(-1).float()
+
+        return topk_score.mean().item()
 
 if __name__ == '__main__':
     from dataset import CocoImage
     from dataset import CocoText
     from dataset import ImageLoader
     from model import CascadeCLIP,CLIP
+
+    metric_fn = TopKMetric
+
     coco_image = CocoImage()
     coco_text  = CocoText()
     image_loader = ImageLoader(
         coco_image,
         batch_size=2
     )
-    text_loader = torch.utils.data.DataLoader(
-        coco_text.first(),
-        batch_size=32,
-        drop_last=False
-    )
+    if metric_fn == KNNSimilarityMetric:
+        text_loader = torch.utils.data.DataLoader(
+            coco_text.first(),
+            batch_size=32,
+            drop_last=False
+        )
 
-    def metric_cascade_clip(k=[10]):
-        model = CascadeCLIP()
-        model.cuda()
-        indices, text_emb = model.topk_images(image_loader, text_loader, topk=25, topm=200, return_index=True, return_text_emb=True, verbose=True)
-        metrics = []
-        for _k in k:
-            metric_fn = KNNSimilarityMetric(text_emb,k=_k,verbose=False)
-            metric    = metric_fn(indices).item()
-            metrics.append(metric)
-        return metrics
-    def metric_clip(k=[10]):
-        model = CLIP()
-        model.cuda()
-        indices, text_emb = model.topk_images(image_loader, text_loader, topk=25, return_index=True, return_text_emb=True, verbose=True)
-        metrics = []
-        for _k in k:
-            metric_fn = KNNSimilarityMetric(text_emb,k=_k,verbose=False)
-            metric    = metric_fn(indices).item()
-            metrics.append(metric)
-        return metrics
+        def metric_cascade_clip(k=[10]):
+            model = CascadeCLIP()
+            model.cuda()
+            indices, text_emb = model.topk_images(image_loader, text_loader, topk=25, topm=200, return_index=True, return_text_emb=True, verbose=True)
+            metrics = []
+            for _k in k:
+                metric_fn = KNNSimilarityMetric(text_emb,k=_k,verbose=False)
+                metric    = metric_fn(indices)
+                metrics.append(metric)
+            return metrics
+        def metric_clip(k=[10]):
+            model = CLIP()
+            model.cuda()
+            indices, text_emb = model.topk_images(image_loader, text_loader, topk=25, return_index=True, return_text_emb=True, verbose=True)
+            metrics = []
+            for _k in k:
+                metric_fn = KNNSimilarityMetric(text_emb,k=_k,verbose=False)
+                metric    = metric_fn(indices)
+                metrics.append(metric)
+            return metrics
+    elif metric_fn == TopKMetric:
+        text_loader = torch.utils.data.DataLoader(
+            coco_text.flatten(),
+            batch_size=32,
+            drop_last=False
+        )
+        def metric_cascade_clip(k=[10]):
+            model = CascadeCLIP()
+            # model.cuda()
+            indices = model.topk_images(image_loader, text_loader, topk=25, topm=125, return_index=True,  verbose=True)
+            metrics = []
+            for _k in k:
+                metric_fn = TopKMetric(coco_text.mask,k=_k,verbose=False)
+                metric    = metric_fn(indices)
+                metrics.append(metric)
+            return metrics
+        def metric_clip(k=[10]):
+            model = CLIP()
+            # model.cuda()
+            indices = model.topk_images(image_loader, text_loader, topk=25, return_index=True,  verbose=True)
+            metrics = []
+            for _k in k:
+                metric_fn = TopKMetric(coco_text.mask,k=_k,verbose=False)
+                metric    = metric_fn(indices)
+                metrics.append(metric)
+            return metrics
     ks = [5,10,15,20,25]
-    knn_clip = metric_clip(ks)
     knn_cascade_clip = metric_cascade_clip(ks)
+    print(knn_cascade_clip)
+    knn_clip = metric_clip(ks)
+    print(knn_clip)
+    
     print("\n\n\n")
     for i, k in enumerate(ks):
-        print(f"[knn({k})]CLIP:{knn_clip[i]} CascadeCLIP:{knn_cascade_clip[i]}")
+        print(f"[metric({k})]CLIP:{knn_clip[i]} CascadeCLIP:{knn_cascade_clip[i]}")
