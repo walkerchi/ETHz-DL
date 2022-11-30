@@ -36,13 +36,13 @@ def get_mha_proj(model, index):
 
 def get_ffn1(model, index):
     layer = get_layers(model)[index]
-    ffn1 = layer.intermediate
+    ffn1 = layer.mlp.fc1#intermediate
     return ffn1
 
 
 def get_ffn2(model, index):
     layer = get_layers(model)[index]
-    ffn2 = layer.mlp #.output
+    ffn2 = layer.mlp.fc2 #.output
     return ffn2
 
 
@@ -122,12 +122,12 @@ def collect_layer_inputs(
         prev_layer = layers[layer_idx - 1]
 
         for batch in prev_inputs:
-            batch[2] = head_mask[layer_idx - 1].view(1, -1, 1, 1)
+            batch[2] = head_mask[layer_idx - 1] #.view(1, -1, 1, 1)
             with MaskNeurons(model.vision_model, neuron_mask):
-                prev_output = prev_layer(*batch)
+                prev_output = prev_layer(batch[0], None, None, head_mask=batch[2])
 
             batch[0] = prev_output[0]
-            batch[2] = head_mask[layer_idx].view(1, -1, 1, 1)
+            batch[2] = head_mask[layer_idx] # .view(1, -1, 1, 1)
             inputs.append(batch)
 
     return inputs

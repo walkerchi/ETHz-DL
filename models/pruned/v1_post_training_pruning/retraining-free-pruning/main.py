@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_name", type=str, required=True)
+parser.add_argument("--model_name", type=str, default='openai/clip-vit-base-patch32')
 parser.add_argument("--task_name", type=str, required=True, choices=[
     "mnli",
     "qqp",
@@ -47,7 +47,7 @@ parser.add_argument("--task_name", type=str, required=True, choices=[
     "squad_v2",
     "mscoco",
 ])
-parser.add_argument("--ckpt_dir", type=str, required=True)
+parser.add_argument("--ckpt_dir", type=str, default='ckpt')
 parser.add_argument("--output_dir", type=str, default=None)
 parser.add_argument("--gpu", type=int, default=0)
 
@@ -60,8 +60,8 @@ parser.add_argument("--constraint", type=float, required=True,
 )
 parser.add_argument("--mha_lut", type=str, default=None)
 parser.add_argument("--ffn_lut", type=str, default=None)
-parser.add_argument("--num_samples", type=int, default=2048)
-parser.add_argument("--seed", type=int, default=0)
+parser.add_argument("--num_samples", type=int, default=128)
+parser.add_argument("--seed", type=int, default=1)
 
 
 def main():
@@ -148,13 +148,13 @@ def main():
     )
 
     # Prepare the model
-    model = model.cpu()#cuda()
+    model = model.cpu() #cuda()
     model.eval()
     for param in model.parameters():
         param.requires_grad_(False)
     full_head_mask = torch.ones(config.num_hidden_layers, config.num_attention_heads)#cuda()
-    full_neuron_mask = torch.ones(config.num_hidden_layers, config.hidden_size)#config.intermediate_size).cpu()#cuda()
-    print(config.num_hidden_layers, config.num_attention_heads, config.intermediate_size)
+    full_neuron_mask = torch.ones(config.num_hidden_layers, config.intermediate_size).cpu()#cuda()
+
     start = time.time()
     # Search the optimal mask
     head_grads, neuron_grads = collect_mask_grads(

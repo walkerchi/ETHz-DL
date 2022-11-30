@@ -584,7 +584,7 @@ class CLIPEncoder(nn.Module):
                     head_mask=layer_head_mask, # Edit
                 )
             else:
-                layer_outputs = encoder_layer.forward( # Edit added .forward (why was that necessary??)
+                layer_outputs = encoder_layer( # Edit added .forward (why was that necessary??)
                     hidden_states,
                     attention_mask,
                     causal_attention_mask,

@@ -17,7 +17,7 @@ def search_mac(
 
     num_hidden_layers = config.num_hidden_layers
     num_attention_heads = config.num_attention_heads
-    intermediate_size = config.hidden_size#intermediate_size
+    intermediate_size = config.intermediate_size
     hidden_size = config.hidden_size
     attention_head_size = int(hidden_size / num_attention_heads)
 
