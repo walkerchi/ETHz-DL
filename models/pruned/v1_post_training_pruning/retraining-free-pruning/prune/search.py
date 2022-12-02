@@ -29,10 +29,8 @@ def search_mac(
         attention_head_size,
     )
     max_mac = mac_constraint * original_mac
-
     head_importance = compute_fisher_info(head_grads)
     neuron_importance = compute_fisher_info(neuron_grads)
-
     # Globally rank heads and neurons
     sorted_head_importance, sorted_head_indicies = head_importance.view(-1).sort(descending=True)
     sorted_neuron_importance, sorted_neuron_indicies = neuron_importance.view(-1).sort(descending=True)

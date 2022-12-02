@@ -195,6 +195,7 @@ def rescale_mask(
                 break
             scale_factor = scale_factor[:-1]
             if scale_factor.max() > 10 or scale_factor.min() < -10:
+                print(scale_factor)
                 break
             nonzero_heads = rescaled_head_mask[layer_idx].nonzero().flatten()
             for index, scale in zip(nonzero_heads, scale_factor):
@@ -217,6 +218,7 @@ def rescale_mask(
             if not success:
                 break
             if scale_factor.max() > 20 or scale_factor.min() < -10: # ?? had to change to 20
+                print(scale_factor)
                 break
             nonzero_neurons = rescaled_neuron_mask[layer_idx].nonzero().flatten()
             for index, scale in zip(nonzero_neurons, scale_factor):

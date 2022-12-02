@@ -1,6 +1,8 @@
 import torch
-import cupy
-from cupyx.scipy.sparse.linalg import lsmr
+# import cupy
+import numpy as np
+# from cupyx.scipy.sparse.linalg import lsmr
+from scipy.sparse.linalg import lsmr
 
 
 @torch.no_grad()
@@ -19,10 +21,10 @@ def lsmr_cupy_solver(A, B):
     if B.shape[0] == 1:
         X = B / A[0, 0]
     else:
-        CU_A = cupy.asarray(A.cpu().numpy())
-        CU_B = cupy.asarray(B.cpu().numpy())
+        CU_A = np.asarray(A.cpu().numpy())
+        CU_B = np.asarray(B.cpu().numpy())
         solution = lsmr(CU_A, CU_B, damp=1)
-        X = cupy.asnumpy(solution[0])
+        X =  solution[0] # cupy.asnumpy(solution[0])
         X = torch.from_numpy(X).to(A.device)
     X = X + 1
     return X, solution[1] < 3

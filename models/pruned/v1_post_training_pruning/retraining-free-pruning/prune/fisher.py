@@ -8,7 +8,6 @@ def collect_mask_grads(model, head_mask, neuron_mask, dataloader):
     neuron_mask.requires_grad_(True)
 
     handles = apply_neuron_mask(model.vision_model, neuron_mask)
-    loss = torch.nn.CrossEntropyLoss()
     model.eval()
     head_grads = []
     neuron_grads = []
@@ -17,9 +16,8 @@ def collect_mask_grads(model, head_mask, neuron_mask, dataloader):
             #batch[k] = v.to("cpu", non_blocking=True)
         batch[0]['pixel_values'] = torch.squeeze(batch[0]['pixel_values'])
         outputs = model.get_image_features(**batch[0], head_mask=head_mask)
-
         # loss = outputs.loss
-        l = loss(outputs, batch[1].squeeze())
+        l = model.get_loss(outputs, batch[1].squeeze())
         l.backward()
 
         head_grads.append(head_mask.grad.detach())

@@ -54,7 +54,6 @@ def get_classifier(model):
         classifier = model.classifier.out_proj
     return classifier
 
-
 def register_mask(module, mask):
     # hook = lambda _, inputs: (inputs[0] * mask, inputs[1])
     hook = lambda _, inp: (inp[0]*mask)

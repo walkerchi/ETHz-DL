@@ -107,3 +107,6 @@
 11/28/2022 21:01:17 - INFO - __main__ - Seed number: 1
 11/28/2022 21:02:42 - INFO - __main__ - Pruned Model MAC: 50.00 %
 11/28/2022 21:03:44 - INFO - __main__ - mscoco Pruning time (s): 128.06669926643372
+12/01/2022 14:17:50 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.5, ffn_lut=None, gpu=0, metric='mac', mha_lut=None, model_name='openai/clip-vit-base-patch32', num_samples=128, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/mac/0.5/seed_1', seed=1, task_name='mscoco')
+12/01/2022 14:17:50 - INFO - __main__ - Seed number: 1
+12/01/2022 14:19:56 - INFO - __main__ - Pruned Model MAC: 50.00 %

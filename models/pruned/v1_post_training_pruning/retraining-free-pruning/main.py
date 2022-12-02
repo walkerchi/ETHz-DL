@@ -2,24 +2,17 @@ import argparse
 import logging
 import os
 import time
-# python3 main.py --model_name openai/clip-vit-base-patch32 --ckpt_dir ckpt --constraint 0.5 --task_name mscoco
+# python3 main.py --constraint 0.5 --num_samples 2048
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset
 from transformers import (
-    AutoConfig,
-    AutoModelForSequenceClassification,
-    AutoModelForQuestionAnswering,
-    AutoTokenizer,
-    DataCollatorWithPadding,
     set_seed,
     CLIPProcessor,
     CLIPModel,
     CLIPTokenizer
 )
 from modeling_clip import CLIPModel as CLIPModel_pruned
-from dataset.glue import glue_dataset, max_seq_length, avg_seq_length
-from dataset.squad import squad_dataset
 from dataset.MSCOCO import MSCOCO
 from efficiency.mac import compute_mask_mac
 from efficiency.latency import estimate_latency
@@ -27,7 +20,7 @@ from prune.fisher import collect_mask_grads
 from prune.search import search_mac, search_latency
 from prune.rearrange import rearrange_mask
 from prune.rescale import rescale_mask
-from evaluate.nlp import test_accuracy
+from evaluate.nlp import test_accuracy, test_model
 from utils.schedule import get_pruning_schedule
 
 
@@ -36,15 +29,7 @@ logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_name", type=str, default='openai/clip-vit-base-patch32')
-parser.add_argument("--task_name", type=str, required=True, choices=[
-    "mnli",
-    "qqp",
-    "qnli",
-    "sst2",
-    "stsb",
-    "mrpc",
-    "squad",
-    "squad_v2",
+parser.add_argument("--task_name", type=str, default='mscoco', choices=[
     "mscoco",
 ])
 parser.add_argument("--ckpt_dir", type=str, default='ckpt')
@@ -55,21 +40,20 @@ parser.add_argument("--metric", type=str, choices=[
     "mac",
     "latency",
 ], default="mac")
-parser.add_argument("--constraint", type=float, required=True,
+parser.add_argument("--constraint", type=float, default=0.5,
     help="MAC/latency constraint relative to the original model",
 )
 parser.add_argument("--mha_lut", type=str, default=None)
 parser.add_argument("--ffn_lut", type=str, default=None)
 parser.add_argument("--num_samples", type=int, default=128)
-parser.add_argument("--seed", type=int, default=1)
+parser.add_argument("--seed", type=int, default=4)
 
 
 def main():
     args = parser.parse_args()
     IS_SQUAD = "squad" in args.task_name
     IS_LARGE = "large" in args.model_name
-    #seq_len = 170 if IS_SQUAD else avg_seq_length(args.task_name)
-    seq_len = 100
+    seq_len = 200 # for ViT this is nr of patches per image, but is variable ??
     # Create the output directory
     if args.output_dir is None:
         args.output_dir = os.path.join(
@@ -95,45 +79,22 @@ def main():
     logger.info(args)
 
     # Set a GPU and the experiment seed
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+    # os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
     set_seed(args.seed)
     logger.info(f"Seed number: {args.seed}")
 
     # Load the finetuned model and the corresponding tokenizer
-    # config = AutoConfig.from_pretrained(args.ckpt_dir)
-    # model_generator = AutoModelForQuestionAnswering if IS_SQUAD else AutoModelForSequenceClassification
-    model = CLIPModel_pruned.from_pretrained(args.model_name) # model_generator.from_pretrained(args.ckpt_dir, config=config)
+    model = CLIPModel_pruned.from_pretrained(args.model_name)
     tokenizer = CLIPProcessor.from_pretrained(args.model_name)
     config = model.config.vision_config
-    #model = model.vision_model
-        # args.model_name,
-        # use_fast=True,
-        # use_auth_token=None,
-    # )
 
     # Load the training dataset
-    # if IS_SQUAD:
-        # training_dataset = squad_dataset(
-            # args.task_name,
-            # tokenizer,
-            # training=True,
-            # max_seq_len=384,
-            # pad_to_max=False,
-        # )
     if args.task_name == 'mscoco':
         training_dataset = MSCOCO(3000, args.model_name)
     else:
         raise NotImplementedError
-        # training_dataset = glue_dataset(
-            # args.task_name,
-            # tokenizer,
-            # training=True,
-            # max_seq_len=max_seq_length(args.task_name),
-            # pad_to_max=False,
-        # )
 
     # Sample the examples to be used for search
-    # collate_fn = DataCollatorWithPadding(tokenizer, False)
     sample_dataset = Subset(
         training_dataset,
         np.random.choice(len(training_dataset), args.num_samples).tolist(),
@@ -153,7 +114,7 @@ def main():
     for param in model.parameters():
         param.requires_grad_(False)
     full_head_mask = torch.ones(config.num_hidden_layers, config.num_attention_heads)#cuda()
-    full_neuron_mask = torch.ones(config.num_hidden_layers, config.intermediate_size).cpu()#cuda()
+    full_neuron_mask = torch.ones(config.num_hidden_layers, config.intermediate_size)#cuda()
 
     start = time.time()
     # Search the optimal mask
@@ -163,7 +124,8 @@ def main():
         full_neuron_mask,
         sample_dataloader,
     )
-    teacher_constraint = get_pruning_schedule(target=args.constraint, num_iter=2)[0]
+    teacher_constraint = get_pruning_schedule(target=args.constraint, num_iter=2)[0] # sqrt(constraint)
+
     if args.metric == "mac":
         teacher_head_mask, teacher_neuron_mask = search_mac(
             config,
@@ -182,6 +144,7 @@ def main():
         pruned_mac, orig_mac = compute_mask_mac(head_mask, neuron_mask, seq_len, config.hidden_size)
         logger.info(f"Pruned Model MAC: {pruned_mac / orig_mac * 100.0:.2f} %")
     elif args.metric == "latency":
+        raise NotImplementedError
         mha_lut = torch.load(args.mha_lut)
         ffn_lut = torch.load(args.ffn_lut)
         teacher_head_mask, teacher_neuron_mask = search_latency(
@@ -203,29 +166,49 @@ def main():
         pruned_latency = estimate_latency(mha_lut, ffn_lut, head_mask, neuron_mask)
         logger.info(f"Pruned Model Latency: {pruned_latency:.2f} ms")
     # Rearrange the mask
+    print('head mask before rearrange:', head_mask)
     head_mask = rearrange_mask(head_mask, head_grads)
+    print('head mask after rearrange:', head_mask)
     neuron_mask = rearrange_mask(neuron_mask, neuron_grads)
 
     # Rescale the mask by solving a least squares problem
-    head_mask, neuron_mask = rescale_mask(
-        model,
-        config,
-        teacher_head_mask,
-        teacher_neuron_mask,
-        head_mask,
-        neuron_mask,
-        sample_dataloader,
-        classification_task=not IS_SQUAD,
-    )
+    # head_mask, neuron_mask = rescale_mask(
+        # model,
+        # config,
+        # teacher_head_mask,
+        # teacher_neuron_mask,
+        # head_mask,
+        # neuron_mask,
+        # sample_dataloader,
+        # classification_task=not IS_SQUAD,
+    # )
 
     # Print the pruning time
     end = time.time()
     logger.info(f"{args.task_name} Pruning time (s): {end - start}")
 
+    test_dataset = Subset(
+        training_dataset,
+        np.random.choice(len(training_dataset), 64).tolist(),
+    )
+    test_batch_size = 8
+    test_dataloader = DataLoader(
+        test_dataset,
+        batch_size=test_batch_size,
+        #collate_fn=collate_fn,
+        shuffle=False,
+        pin_memory=True,
+    )
+
     # Evaluate the accuracy
     # test_acc = test_accuracy(model, head_mask, neuron_mask, tokenizer, args.task_name)
     # logger.info(f"{args.task_name} Test accuracy: {test_acc:.4f}")
-
+    losses = test_model(model, head_mask, neuron_mask, test_dataloader)
+    logger.info(f"Losses for head mask only: {losses[0]}")
+    logger.info(f"Losses for neuron mask only: {losses[1]}")
+    logger.info(f"Losses for both masks: {losses[2]}")
+    logger.info(f"Losses for random binary masks with same number of zeros: {losses[3]}")
+    breakpoint()
     # Save the masks
     torch.save(head_mask, os.path.join(args.output_dir, "head_mask.pt"))
     torch.save(neuron_mask, os.path.join(args.output_dir, "neuron_mask.pt"))

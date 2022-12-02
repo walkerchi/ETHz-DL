@@ -1087,3 +1087,21 @@ class CLIPModel(CLIPPreTrainedModel):
             text_model_output=text_outputs,
             vision_model_output=vision_outputs,
         )
+    # edit: added method for ETH Project
+    def get_loss(self, image_embeds, text_embeds):
+        """
+        inputs: the image and text embeddings from the get_image_features/ get_text_features functions
+        output: clip loss
+        """
+        # normalized features
+        image_embeds = image_embeds / image_embeds.norm(p=2, dim=-1, keepdim=True)
+        text_embeds = text_embeds / text_embeds.norm(p=2, dim=-1, keepdim=True)
+
+        # cosine similarity as logits
+        logit_scale = self.logit_scale.exp()
+        logits_per_text = torch.matmul(text_embeds, image_embeds.t()) * logit_scale
+        logits_per_image = logits_per_text.t()
+
+        return clip_loss(logits_per_text)
+
+
