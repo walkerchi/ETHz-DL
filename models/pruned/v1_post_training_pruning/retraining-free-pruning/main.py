@@ -20,7 +20,7 @@ from prune.fisher import collect_mask_grads
 from prune.search import search_mac, search_latency
 from prune.rearrange import rearrange_mask
 from prune.rescale import rescale_mask
-from evaluate.nlp import test_accuracy, test_model
+from evaluate.eval import test_model
 from utils.schedule import get_pruning_schedule
 
 
@@ -46,7 +46,7 @@ parser.add_argument("--constraint", type=float, default=0.5,
 parser.add_argument("--mha_lut", type=str, default=None)
 parser.add_argument("--ffn_lut", type=str, default=None)
 parser.add_argument("--num_samples", type=int, default=128)
-parser.add_argument("--seed", type=int, default=4)
+parser.add_argument("--seed", type=int, default=5)
 
 
 def main():
@@ -172,16 +172,16 @@ def main():
     neuron_mask = rearrange_mask(neuron_mask, neuron_grads)
 
     # Rescale the mask by solving a least squares problem
-    # head_mask, neuron_mask = rescale_mask(
-        # model,
-        # config,
-        # teacher_head_mask,
-        # teacher_neuron_mask,
-        # head_mask,
-        # neuron_mask,
-        # sample_dataloader,
-        # classification_task=not IS_SQUAD,
-    # )
+    head_mask, neuron_mask = rescale_mask(
+        model,
+        config,
+        teacher_head_mask,
+        teacher_neuron_mask,
+        head_mask,
+        neuron_mask,
+        sample_dataloader,
+        classification_task=False,
+    )
 
     # Print the pruning time
     end = time.time()

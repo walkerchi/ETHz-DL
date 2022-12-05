@@ -23,8 +23,10 @@ def lsmr_cupy_solver(A, B):
     else:
         CU_A = np.asarray(A.cpu().numpy())
         CU_B = np.asarray(B.cpu().numpy())
-        solution = lsmr(CU_A, CU_B, damp=1)
+        solution = lsmr(CU_A, CU_B, damp=1, maxiter=100000)
         X =  solution[0] # cupy.asnumpy(solution[0])
         X = torch.from_numpy(X).to(A.device)
     X = X + 1
+    if solution[1] >3:
+        print('ERROR:', solution[1])
     return X, solution[1] < 3
