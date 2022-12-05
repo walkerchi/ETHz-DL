@@ -2,6 +2,7 @@ __pycache__
 .ckpt
 .coco
 .dataset
+datasets
 .log
 .transformer
 .mobilenet/project.pt
@@ -12,3 +13,5 @@ timer
 test*
 distill_scr.py 
 distill_cos_.py
+fisher_pruning/dataset/*
+

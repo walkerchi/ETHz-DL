@@ -1,19 +1,20 @@
-import torch 
-import torch.nn as nn 
+import torch
+import torch.nn as nn
 import torch.nn.functional as F
-import torchvision  
+import torchvision
 from PIL import Image
-from tqdm import tqdm 
+from tqdm import tqdm
 import numpy as np
 import transformers
-from transformers import CLIPProcessor, CLIPModel 
+from transformers import CLIPProcessor, CLIPModel
 from sklearn import metrics
 import argparse
 import os
 import logging
+from fisher_pruning.modeling_clip import CLIPModel as CLIPModel_pruned
 
 class Cifar100Loader(torch.utils.data.DataLoader):
-    def __init__(self, 
+    def __init__(self,
                 batch_size       = 16,
                 cifar100_path       = "./.dataset/cifar100",
                 transformer_path = "./.transformer/clip-vit-base-patch32"
@@ -35,12 +36,13 @@ class Cifar100Loader(torch.utils.data.DataLoader):
 class MobileCLIP(nn.Module):
     def __init__(self):
         super().__init__()
-        self.text_model = None 
+        self.text_model = None
         self.text_projection = None
-        self.visual_model = None 
+        self.visual_model = None
         self.visual_projection = None
+        self.head = None
     @staticmethod
-    def from_assemble(num_layers=1, 
+    def from_assemble(num_layers=1,
                     load_path="./.mobilenet/project.pt",
                     transformer_path="./.transformer/clip-vit-base-patch32",
                     mobilenet_path="./.mobilenet"
@@ -79,11 +81,28 @@ class MobileCLIP(nn.Module):
     @staticmethod
     def from_pretrained(self, path="./.mobileclip/mobileclip.pt"):
         return torch.load(path)
+    @staticmethod
+    def from_fisher_pruning(seed=0):
+        path=f'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/mac/0.5/seed_{seed}/'
+        head_mask = torch.load(path+'head_mask.pt')
+        neuron_mask = torch.load(path+'neuron_mask.pt')
+        clip = CLIPModel_pruned.from_pretrained('openai/clip-vit-base-patch32')
+        mobileclip = MobileCLIP()
+        mobileclip.head_mask = head_mask
+        mobileclip.text_model = clip.text_model
+        mobileclip.text_projection = clip.text_projection
+        mobileclip.visual_model = clip.vision_model
+        mobileclip.visual_projection = clip.visual_projection
+        return mobileclip
+
     def save(self, path="./.mobileclip/mobileclip.pt"):
         torch.save(self, path)
         return self
     def visual_encode(self, x, is_norm=True):
-        x = self.visual_model(x)
+        if self.head_mask is not None:
+            x = self.visual_model(x, head_mask=self.head_mask)
+        else:
+            x = self.visual_model(x)
         x = x[1]
         x = self.visual_projection(x)
         if is_norm:
@@ -103,24 +122,23 @@ class MobileCLIP(nn.Module):
 
 
 def main(config):
-    mobileclip = MobileCLIP.from_assemble(config.n_layers, config.load_path, config.transformer_path, config.mobilenet_path)
+    mobileclip = MobileCLIP.from_fisher_pruning(seed=3) #MobileCLIP.from_assemble(config.n_layers, config.load_path, config.transformer_path, config.mobilenet_path)
     dataloader = Cifar100Loader(config.batch_size, config.cifar100_path, config.transformer_path)
-
     def to_cuda(x):
         if isinstance(x, (torch.Tensor,torch.nn.Module)):
             return x.cuda()
         elif isinstance(x, (dict,transformers.tokenization_utils_base.BatchEncoding)):
             for k, v in x.items():
                 x[k] = to_cuda(v)
-            return x 
+            return x
         elif isinstance(x, (list, tuple)):
             return [to_cuda(i) for i in x]
         else:
             print(type(x))
             print(x)
             raise NotImplementedError()
-    
-    
+
+
     if config.cuda:
         mobileclip.cuda()
 
