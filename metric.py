@@ -143,27 +143,70 @@ if __name__ == '__main__':
     from dataset import CocoImage
     from dataset import CocoText
     from dataset import ImageLoader
-    from model import CascadeCLIP,CLIP
+    from model import CascadeCLIP,CLIP,FLIPImageEncoder,MobileNetImageEncoder
+    import argparse
+    import logging
+    import os
 
-    metric_fn = TopKMetric
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--image-backend", type=str, default="mobilenet", choices=["mobilenet", "flip"])
+    parser.add_argument("--metric", type=str, default="knn", choices=["knn","topk"])
+    parser.add_argument("--image-batch", type=int, default=2)
+    parser.add_argument("--text-batch", type=int, default=32)
+    parser.add_argument("--k", nargs="+", type=int, default=[5,10,15,20,25])
+    parser.add_argument("--n-layers", type=int, default=2, help="number of projection layer in mobilenet")
+    parser.add_argument("--projection-path", type=str, default="./.mobilenet/project_coco_train_ep1_ly2.pt", help="weight file of projection layer in mobilenet")
+    parser.add_argument("--p", type=float, default=0.5, help="mask rate in FLIP")
+    parser.add_argument("--cuda", action="store_true")
+    parser.add_argument("--use-clip",action="store_true")
+    parser.add_argument("--log", type=str, default="metric.log")
+    config = parser.parse_args()
+
+    if not os.path.exists("./.log"):
+        os.mkdir("./.log")
+    logging.basicConfig(filename=f".log/{config.log}",
+                     format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s-%(funcName)s',
+                     level=logging.INFO)
+
+    image_backend = {
+        "flip":FLIPImageEncoder,
+        "mobilenet":MobileNetImageEncoder
+    }[config.image_backend]
 
     coco_image = CocoImage()
     coco_text  = CocoText()
     image_loader = ImageLoader(
         coco_image,
-        batch_size=2
+        batch_size=config.image_batch
     )
-    if metric_fn == KNNSimilarityMetric:
+    if config.metric == "knn":
         text_loader = torch.utils.data.DataLoader(
             coco_text.first(),
-            batch_size=32,
+            batch_size=config.text_batch,
             drop_last=False
         )
 
         def metric_cascade_clip(k=[10]):
-            model = CascadeCLIP()
-            model.cuda()
-            indices, text_emb = model.topk_images(image_loader, text_loader, topk=25, topm=200, return_index=True, return_text_emb=True, verbose=True)
+            if config.use_clip:
+                model = CLIP(
+                    n_layers=config.n_layers,
+                    image_backend=image_backend, 
+                    p=config.p,
+                    mobilenet_projection_path=config.projection_path
+                )
+            else:
+                model = CascadeCLIP(
+                    n_layers=config.n_layers,
+                    image_backend=image_backend, 
+                    p=config.p,
+                    mobilenet_projection_path=config.projection_path
+                )
+            if config.cuda:
+                model.cuda()
+            if config.use_clip:
+                indices, text_emb = model.topk_images(image_loader, text_loader, topk=25, return_index=True, return_text_emb=True, verbose=True)
+            else:
+                indices, text_emb = model.topk_images(image_loader, text_loader, topk=25, topm=200, return_index=True, return_text_emb=True, verbose=True)
             metrics = []
             for _k in k:
                 metric_fn = KNNSimilarityMetric(text_emb,k=_k,verbose=False)
@@ -172,7 +215,8 @@ if __name__ == '__main__':
             return metrics
         def metric_clip(k=[10]):
             model = CLIP()
-            model.cuda()
+            if config.cuda:
+                model.cuda()
             indices, text_emb = model.topk_images(image_loader, text_loader, topk=25, return_index=True, return_text_emb=True, verbose=True)
             metrics = []
             for _k in k:
@@ -180,16 +224,33 @@ if __name__ == '__main__':
                 metric    = metric_fn(indices)
                 metrics.append(metric)
             return metrics
-    elif metric_fn == TopKMetric:
+    elif config.metric == "topk":
         text_loader = torch.utils.data.DataLoader(
             coco_text.flatten(),
-            batch_size=32,
+            batch_size=config.text_batch,
             drop_last=False
         )
         def metric_cascade_clip(k=[10]):
-            model = CascadeCLIP()
-            # model.cuda()
-            indices = model.topk_images(image_loader, text_loader, topk=25, topm=125, return_index=True,  verbose=True)
+            if config.use_clip:
+                model = CLIP(
+                    n_layers=config.n_layers,
+                    image_backend=image_backend, 
+                    p=config.p,
+                    mobilenet_projection_path=config.projection_path
+                )
+            else:
+                model = CascadeCLIP(
+                    n_layers=config.n_layers,
+                    image_backend=image_backend, 
+                    p=config.p,
+                    mobilenet_projection_path=config.projection_path
+                )
+            if config.cuda:
+                model.cuda()
+            if config.use_clip:
+                indices = model.topk_images(image_loader, text_loader, topk=25, return_index=True,  verbose=True)
+            else:
+                indices = model.topk_images(image_loader, text_loader, topk=25, topm=125, return_index=True,  verbose=True)
             metrics = []
             for _k in k:
                 metric_fn = TopKMetric(coco_text.mask,k=_k,verbose=False)
@@ -198,7 +259,8 @@ if __name__ == '__main__':
             return metrics
         def metric_clip(k=[10]):
             model = CLIP()
-            # model.cuda()
+            if config.cuda:
+                model.cuda()
             indices = model.topk_images(image_loader, text_loader, topk=25, return_index=True,  verbose=True)
             metrics = []
             for _k in k:
@@ -206,12 +268,15 @@ if __name__ == '__main__':
                 metric    = metric_fn(indices)
                 metrics.append(metric)
             return metrics
-    ks = [5,10,15,20,25]
-    knn_cascade_clip = metric_cascade_clip(ks)
-    print(knn_cascade_clip)
-    knn_clip = metric_clip(ks)
-    print(knn_clip)
+    logging.info("config")
+    for k,v in config._get_kwargs():
+        logging.info(f"{str(k):25}:{str(v):25}")
+    logging.info("\n\n\n")
+    knn_cascade_clip = metric_cascade_clip(config.k)
+    logging.info(f"{config.metric}[CasCLIP]{knn_cascade_clip}")
+    knn_clip = metric_clip(config.k)
+    logging.info(f"{config.metric}[CLIP]{knn_clip}")
     
-    print("\n\n\n")
-    for i, k in enumerate(ks):
-        print(f"[metric({k})]CLIP:{knn_clip[i]} CascadeCLIP:{knn_cascade_clip[i]}")
+    logging.info("\n\n\n")
+    for i, k in enumerate(config.k):
+        logging.info(f"[{config.metric}({k})]CLIP:{knn_clip[i]} CascadeCLIP:{knn_cascade_clip[i]}")

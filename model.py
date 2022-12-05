@@ -24,7 +24,7 @@ class MobileNetImageEncoder(nn.Module):
         self.project.load_state_dict(torch.load(path))
     def save(self, path:str):
         torch.save(self.project.state_dict(),path)
-    def forward(self, x):
+    def forward(self, x, norm:bool=True):
         if self.training:
             with torch.no_grad():
                 x = self.features(x)
@@ -36,10 +36,62 @@ class MobileNetImageEncoder(nn.Module):
                 x = self.features(x)
                 x = self.avgpool(x)
                 x = x[:, :, 0, 0]
-                # print(x.shape)
                 x = self.project(x)
+        if norm:
+            x = x / x.norm(p=2, dim=-1, keepdim=True)
         return x
         
+class FLIPImageEmbedding(nn.Module):
+    def __init__(self, p:float=0.5, transformer_path="./.transformer/clip-vit-base-patch32"):
+        super().__init__()
+        assert p >= 0.0 and p <= 1.0, f"p should be within [0.0, 1.0] but got {p}"
+        clip = CLIPModel.from_pretrained("openai/clip-vit-base-patch32", cache_dir=transformer_path)
+        self.patch_embedding    = clip.vision_model.embeddings.patch_embedding
+        self.class_embedding    = clip.vision_model.embeddings.class_embedding
+        self.position_embedding = clip.vision_model.embeddings.position_embedding 
+        self.p                  = p 
+    def forward(self, x):
+        batch_size   = x.shape[0]
+        patch_embeds = self.patch_embedding(x)
+        patch_embeds = patch_embeds.flatten(2).transpose(1,2) # [b, num_pathces, n_embed]
+        mask         = torch.randperm(patch_embeds.shape[1]) >= int(patch_embeds.shape[1] * self.p)
+        patch_embeds = patch_embeds[:, mask, :]
+        num_patches  = patch_embeds.shape[1]
+        class_embeds = self.class_embedding.expand(batch_size, 1, -1)
+        embeddings   = torch.cat([class_embeds, patch_embeds], dim=1)
+        embeddings   = embeddings + self.position_embedding(torch.arange(num_patches + 1).to(embeddings.device))
+        return embeddings
+
+class FLIPImageEncoder(nn.Module):
+    def __init__(self, p:float=0.5, transformer_path="./.transformer/clip-vit-base-patch32"):
+        super().__init__()
+        clip = CLIPModel.from_pretrained("openai/clip-vit-base-patch32", cache_dir=transformer_path)
+        self.embeddings    = FLIPImageEmbedding(p, transformer_path)
+        self.pre_layernorm = clip.vision_model.pre_layrnorm
+        self.encoder       = clip.vision_model.encoder
+        self.post_layernorm= clip.vision_model.post_layernorm
+        self.visual_projection = clip.visual_projection
+    def forward(self, x, norm:bool=True):
+        """
+            Parameters
+            ----------
+                x:      torch.FloatTensor[b, 3, H, W]
+        """
+        with torch.no_grad():
+            x = self.embeddings(x)
+            x = self.pre_layernorm(x)
+            x = self.encoder(inputs_embeds=x)
+            x = x[0]
+            x = x[:, 0, :]
+            x = self.post_layernorm(x)
+            x = self.visual_projection(x)
+            if norm:
+                x = x / x.norm(p=2, dim=-1, keepdim=True)
+        return x
+
+
+
+
 class CLIPImageEncoder(nn.Module):
     def __init__(self, transformer_path="./.transformer/clip-vit-base-patch32"):
         super().__init__()
@@ -69,8 +121,6 @@ class CLIPTextEncoder(nn.Module):
             if norm:
                 x = x / x.norm(p=2, dim=-1, keepdim=True)
         return x
-
-
 
 class CLIPBase(nn.Module):
     def __init__(self, transformer_path:str="./.transformer/clip-vit-base-patch32"):
@@ -120,9 +170,23 @@ class CLIPBase(nn.Module):
         return texts_emb
 
 class CLIP(CLIPBase):
-    def __init__(self, transformer_path:str="./.transformer/clip-vit-base-patch32"):
+    def __init__(self, 
+                n_layers:int = 2, 
+                mobilenet_projection_path:str = "./.mobilenet/project_coco_train_ep1_ly2.pt",
+                mobilenet_path:str="./.mobilenet",
+                image_backend = CLIPImageEncoder,
+                p = 0.5,
+                transformer_path:str="./.transformer/clip-vit-base-patch32"):
         super().__init__(transformer_path)
-        self.image_encoder = CLIPImageEncoder(transformer_path)
+        if image_backend == CLIPImageEncoder:
+            self.image_encoder = CLIPImageEncoder(transformer_path)
+        elif image_backend == FLIPImageEncoder:
+            self.image_encoder = FLIPImageEncoder(p, transformer_path)
+        elif image_backend == MobileNetImageEncoder:
+            self.image_encoder = MobileNetImageEncoder(n_layers, mobilenet_path)
+            self.image_encoder.load(mobilenet_projection_path)
+        else:
+            raise Exception(f"Unrecongize image_backend, expect <CLIPImageEncoder> or <FLIPImageEncoder> or <MobilNetImageEncoder> but got {image_backend}")
     def image_encode(self, images:Union[torch.utils.data.DataLoader,List[PILImage]],verbose:bool=False):
         if isinstance(images, torch.utils.data.DataLoader):
             l_batch_images_emb = []
@@ -183,11 +247,18 @@ class CLIP(CLIPBase):
 
 class CascadeCLIP(CLIPBase):
     def __init__(self, n_layers:int = 2, 
+                    image_backend = MobileNetImageEncoder,
+                    p  = 0.5,
                     mobilenet_projection_path:str = "./.mobilenet/project_coco_train_ep1_ly2.pt",
                     mobilenet_path:str="./.mobilenet",
                     transformer_path:str="./.transformer/clip-vit-base-patch32"):
         super().__init__(transformer_path)
-        self.small_image_encoder = MobileNetImageEncoder(n_layers, mobilenet_path)
+        if image_backend == MobileNetImageEncoder:
+            self.small_image_encoder = MobileNetImageEncoder(n_layers, mobilenet_path)
+        elif image_backend == FLIPImageEncoder:
+            self.small_image_encoder = FLIPImageEncoder(p, transformer_path)
+        else:
+            raise Exception(f"Unrecongize image_backend, expect <MobileNetImageEncoder> or <FLIPImageEncoder> but got {image_backend}")
         self.small_image_encoder.load(mobilenet_projection_path)
         self.large_image_encoder  = CLIPImageEncoder(transformer_path)
     
@@ -287,13 +358,17 @@ class CascadeCLIP(CLIPBase):
 
 
 if __name__ == '__main__':
+    import torch 
+    from dataset import CocoImage
+    from model import CLIP,FLIPImageEncoder,CLIPImageEncoder
     from dataset import ImageLoader
-    loader = ImageLoader.from_dir("./.coco/val2017",batch_size=4)
-    # model  = CLIP()
-    model = CascadeCLIP(
-        2,"./.mobilenet/project_coco_train_ep1_ly2.pt"
-    )
+    from time import time
+    coco_image   = CocoImage()
+    images       = [coco_image[i] for i in range(2)]
+    # model = CLIP(image_backend=FLIPImageEncoder,p=0.0)
+    model = CLIP()
     model.cuda()
-    model.eval()
-    top2 = model.topk_images(loader, ["an image of banana"], topk=2,verbose=True)[0]
-    print(top2)
+    start = time()
+    model.image_encode(images)
+    end   = time()
+    print(f"{end-start:^5.3f}s")
