@@ -31,7 +31,7 @@ from transformers.utils import (
     logging,
     replace_return_docstrings,
 )
-from .configuration_clip import CLIPConfig, CLIPTextConfig, CLIPVisionConfig
+from transformers.models.clip.configuration_clip import CLIPConfig, CLIPTextConfig, CLIPVisionConfig
 
 
 logger = logging.get_logger(__name__)
@@ -584,7 +584,7 @@ class CLIPEncoder(nn.Module):
                     head_mask=layer_head_mask, # Edit
                 )
             else:
-                layer_outputs = encoder_layer( # Edit added .forward (why was that necessary??)
+                layer_outputs = encoder_layer(
                     hidden_states,
                     attention_mask,
                     causal_attention_mask,
@@ -1093,7 +1093,7 @@ class CLIPModel(CLIPPreTrainedModel):
     def get_loss(self, image_embeds, text_embeds):
         """
         inputs: the image and text embeddings from the get_image_features/ get_text_features functions
-        output: clip loss
+        Returns: clip loss
         """
         # normalized features
         image_embeds = image_embeds / image_embeds.norm(p=2, dim=-1, keepdim=True)

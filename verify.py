@@ -122,7 +122,7 @@ class MobileCLIP(nn.Module):
 
 
 def main(config):
-    mobileclip = MobileCLIP.from_fisher_pruning(seed=3) #MobileCLIP.from_assemble(config.n_layers, config.load_path, config.transformer_path, config.mobilenet_path)
+    mobileclip = MobileCLIP.from_fisher_pruning(seed=5) #MobileCLIP.from_assemble(config.n_layers, config.load_path, config.transformer_path, config.mobilenet_path)
     dataloader = Cifar100Loader(config.batch_size, config.cifar100_path, config.transformer_path)
     def to_cuda(x):
         if isinstance(x, (torch.Tensor,torch.nn.Module)):

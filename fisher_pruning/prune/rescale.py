@@ -52,7 +52,7 @@ def get_mha_lstsq(
             layer(teacher_batch[0], None, None, head_mask=teacher_batch[2])
         hidden_states, = inputs.pop(0) # removed , input_tensor
         teacher_output = mha_proj(hidden_states) # + input_tensor
-        inputs.pop(0) # ?? remove entry added through line above
+        inputs.pop(0) # edit remove entry added through line above
         # not attention_mask ?? teacher_output = remove_padding(teacher_output, attention_mask)
 
         # Get the outputs of the student model
@@ -195,7 +195,7 @@ def rescale_mask(
                 print('No success in solving lsmr problem.') # break
             scale_factor = scale_factor[:-1]
             if scale_factor.max() > 10 or scale_factor.min() < -10:
-                print(scale_factor)
+                print('abnormal scale factor:', scale_factor.min(), scale_factor.max())
                 #break
             nonzero_heads = rescaled_head_mask[layer_idx].nonzero().flatten()
             for index, scale in zip(nonzero_heads, scale_factor):
@@ -217,8 +217,8 @@ def rescale_mask(
             scale_factor, success = lsmr_cupy_solver(ATA, ATB)
             if not success:
                 print('No success in solving lsmr problem.') # break
-            if scale_factor.max() > 20 or scale_factor.min() < -10: # ?? had to change to 20
-                print(scale_factor)
+            if scale_factor.max() > 10 or scale_factor.min() < -10: # ?? had to change to 20
+                print('abnormal scale factor:', scale_factor.min(), scale_factor.max())
                 #break
             nonzero_neurons = rescaled_neuron_mask[layer_idx].nonzero().flatten()
             for index, scale in zip(nonzero_neurons, scale_factor):

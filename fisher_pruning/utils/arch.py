@@ -104,7 +104,7 @@ def collect_layer_inputs(
     if layer_idx == 0:
         encoder = get_encoder(model.vision_model)
         layers = encoder.layers # was encoder.layer
-        encoder.layers_2 = layers[:1]
+        encoder.layers = layers[:1] # we are not interested in the final output
 
         handle = hijack_input(target_layer, inputs)
         for batch in prev_inputs:
@@ -115,7 +115,7 @@ def collect_layer_inputs(
                 model.get_image_features(**batch[0], head_mask=head_mask)
 
         handle.remove()
-        encoder.layers_2 = layers
+        encoder.layers = layers
         inputs = [list(x) for x in inputs]
     else:
         prev_layer = layers[layer_idx - 1]

@@ -127,13 +127,13 @@ def main():
     teacher_constraint = get_pruning_schedule(target=args.constraint, num_iter=2)[0] # sqrt(constraint)
 
     if args.metric == "mac":
-        teacher_head_mask, teacher_neuron_mask = search_mac(
-            config,
-            head_grads,
-            neuron_grads,
-            seq_len,
-            teacher_constraint,
-        )
+        # teacher_head_mask, teacher_neuron_mask = search_mac(
+            # config,
+            # head_grads,
+            # neuron_grads,
+            # seq_len,
+            # teacher_constraint,
+        # )
         head_mask, neuron_mask = search_mac(
             config,
             head_grads,
@@ -175,8 +175,8 @@ def main():
     head_mask, neuron_mask = rescale_mask(
         model,
         config,
-        teacher_head_mask,
-        teacher_neuron_mask,
+        full_head_mask, #teacher_head_mask,
+        full_neuron_mask, #teacher_neuron_mask,
         head_mask,
         neuron_mask,
         sample_dataloader,
