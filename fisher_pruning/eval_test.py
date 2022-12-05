@@ -12,7 +12,7 @@ from transformers import (
     CLIPTokenizer
 )
 from modeling_clip import CLIPModel as CLIPModel_pruned
-from dataset.MSCOCO import MSCOCO
+from dataset.MSCOCO import MSCOCO, test_speed
 from evaluate.eval import test_model
 
 
@@ -28,6 +28,13 @@ if __name__ == "__main__":
     seed = 3
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt')
     neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt')
+    head_mask = head_mask.cuda()
+    model.cuda()
+    test_speed(model, 256, 16, None)#head_mask)
+    test_speed(model, 256, 16, None)
+    test_speed(model, 256, 16, head_mask)
+    test_speed(model, 256, 16, None)
+    breakpoint()
     # load dataset
     dataset = MSCOCO(1000, model_name, offset=3000)
     test_dataset = Subset(
@@ -48,3 +55,5 @@ if __name__ == "__main__":
     print('Random mask losses:', *[round(l.item(),2) for l in losses[3]])
     print('Average loss for binary head mask:', sum(losses[0])/len(losses[0]), 'Average loss for random binary head mask:', sum(losses[3])/len(losses[3]))
     breakpoint()
+
+
