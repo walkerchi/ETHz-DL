@@ -1,0 +1,24 @@
+# CLIP
+
+dataset.name    = 'MSCOCO'
+models.name     = ['OpenAIFLIP','OpenAICLIP']
+topk            = [1,5,10]
+topm            = [10]
+seed            = 123456789
+logging_level   = 'INFO'
+device          = 'cpu'
+
+
+
+[dataset.kwargs]
+n_samples = 20
+layout    = 'caption'
+
+[models.0.kwargs]
+p = 0.5
+model_str = "ViT-B/32"
+
+[models.1.kwargs]
+model_str = "ViT-B/32"
+
+

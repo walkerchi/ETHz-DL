@@ -1,19 +1,19 @@
 # Small and big CLIP from huggingface
 
-type = 'evaluate'
-dataset = 'MSCOCO'
-big_model = 'CLIP'
-small_model = 'CLIP'
-top_k_small_preds_refine = 50
-which_top_k_accs = [1, 5, 10]
-seed = 123456789
+dataset.name  = 'MSCOCO'
+seed          = 123456789
 logging_level = 'INFO'
+models.name   = ['HuggingFaceCLIP', 'HuggingFaceCLIP']
+topm          = [50]
+topk          = [1, 5, 10]
+device        = 'cuda'
 
-[dataset_args]
+[dataset.kwargs]
 n_samples = 5000
+layout    = 'caption'
 
-[big_model_args]
-size = 'big'
+[models.1.kwargs]
+model_str = 'openai/clip-vit-large-patch14'
 
-[small_model_args]
-size = 'small'
+[models.0.kwargs]
+model_str = 'openai/clip-vit-base-patch32'
