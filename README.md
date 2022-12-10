@@ -70,70 +70,90 @@ If you add new model.
                if state is True, the encoding process should be called inside `torch.with_nograd()` to minize the memory cost.
    - `encode_images`
       **Parameters**
-         - images:     Union[List[PILImage], PILImage]
-  
-                        could input a list of PIL.Image or a single.
+         - images:   
+            
+            Union[List[PILImage], PILImage]
 
-                        If input a single, the output shape will be [n_emb]
-                        
-                        else the output will be [n_image, n_emb]
+            could input a list of PIL.Image or a single.
 
-         - batch_size: Optional[int]
-  
-                        if batch_size is `None`, it will visit the image iteratively,
+            If input a single, the output shape will be [n_emb]
+            
+            else the output will be [n_image, n_emb]
 
-                        else it will grab them in a dataloader and do it in batch
-
-         - device:     str
-        
-                        The output device for the embedding
-
-                        As the embeding is so big, so sometimes we should store them in cpu rather than gpu
-
-                        Of course, the runtime device is different from output device which you can set through `.cpu()`  or `.cuda()`
-
-         - verbose:    bool
+         - batch_size: 
           
-                        if verbose, the tqdm progress bar will be showed 
+            Optional[int]
 
-                        else, the encoding process will keep silent
+            if batch_size is `None`, it will visit the image iteratively,
+
+            else it will grab them in a dataloader and do it in batch
+
+         - device: 
+           
+            str
+
+            The output device for the embedding
+
+            As the embeding is so big, so sometimes we should store them in cpu rather than gpu
+
+            Of course, the runtime device is different from output device which you can set through `.cpu()`  or `.cuda()`
+
+         - verbose:    
+         
+            bool
+
+            if verbose, the tqdm progress bar will be showed 
+
+            else, the encoding process will keep silent
 
       **Returns**
-         - emb_images: torch.FloatTensor[n_image, n_emb] or [e_emb]
+         - emb_images: 
+          
+            torch.FloatTensor[n_image, n_emb] or [e_emb]
          
-                        the embedding of the encoded images
+            the embedding of the encoded images
 
    - `encode_texts`
       **Parameters**
-         - texts:      Union[List[str], str]
-        
-                        could input a list of str or a single.
-
-                        If input a single, the output shape will be [n_emb]
-
-                        else the output will be [n_text, n_emb]
-
-         - batch_size: Optional[int]
+         - texts:      
          
-                        if batch_size is `None`, it will visit the text iteratively,
+            Union[List[str], str]
 
-                        else it will grab them in a dataloader and do it in batch
+            could input a list of str or a single.
 
-         - device:     str
-        
-                        The output device for the embedding
+            If input a single, the output shape will be [n_emb]
 
-                        As the embeding is so big, so sometimes we should store them in cpu rather than gpu
+            else the output will be [n_text, n_emb]
 
-                        Of course, the runtime device is different from output device which you can set through `.cpu()`  or `.cuda()`
+         - batch_size: 
+          
+            Optional[int]
 
-         - verbose:    bool
-         
-                        if verbose, the tqdm progress bar will be showed 
+            if batch_size is `None`, it will visit the text iteratively,
 
-                        else, the encoding process will keep silent
+            else it will grab them in a dataloader and do it in batch
+
+         - device:     
+       
+            str
+
+            The output device for the embedding
+
+            As the embeding is so big, so sometimes we should store them in cpu rather than gpu
+
+            Of course, the runtime device is different from output device which you can set through `.cpu()`  or `.cuda()`
+
+         - verbose:    
+          
+            bool
+
+            if verbose, the tqdm progress bar will be showed 
+
+            else, the encoding process will keep silent
 
       **Returns**
-         - emb_texts:  torch.FloatTensor[n_text, n_emb] or [e_emb]
+         - emb_texts:  
         
-                        the embedding of the encoded texts
+            torch.FloatTensor[n_text, n_emb] or [e_emb]
+        
+            the embedding of the encoded texts
