@@ -64,11 +64,13 @@ If you add new model.
    - `text_encoder_str`
       property, a string identify what kind of text encoder it is, (used for cache)
    - `set_no_grad`
+   
       **Parameters**
          - state: bool, default:True
   
                if state is True, the encoding process should be called inside `torch.with_nograd()` to minize the memory cost.
    - `encode_images`
+   
       **Parameters**
          - images:   
             
@@ -107,6 +109,7 @@ If you add new model.
             else, the encoding process will keep silent
 
       **Returns**
+
          - emb_images: 
           
             torch.FloatTensor[n_image, n_emb] or [e_emb]
@@ -114,7 +117,9 @@ If you add new model.
             the embedding of the encoded images
 
    - `encode_texts`
+   
       **Parameters**
+
          - texts:      
          
             Union[List[str], str]
@@ -152,6 +157,7 @@ If you add new model.
             else, the encoding process will keep silent
 
       **Returns**
+      
          - emb_texts:  
         
             torch.FloatTensor[n_text, n_emb] or [e_emb]
