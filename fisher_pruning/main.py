@@ -203,7 +203,7 @@ def main():
     # Evaluate the accuracy
     # test_acc = test_accuracy(model, head_mask, neuron_mask, tokenizer, args.task_name)
     # logger.info(f"{args.task_name} Test accuracy: {test_acc:.4f}")
-    losses = test_model(model, head_mask, neuron_mask, test_dataloader)
+    losses = test_model(model, head_mask, neuron_mask, sample_dataloader)
     logger.info(f"Losses for head mask only: {losses[0]}")
     logger.info(f"Losses for neuron mask only: {losses[1]}")
     logger.info(f"Losses for both masks: {losses[2]}")

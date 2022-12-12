@@ -52,6 +52,7 @@ def get_mha_lstsq(
             layer(teacher_batch[0], None, None, head_mask=teacher_batch[2])
         hidden_states, = inputs.pop(0) # removed , input_tensor
         teacher_output = mha_proj(hidden_states) # + input_tensor
+
         inputs.pop(0) # edit remove entry added through line above
         # not attention_mask ?? teacher_output = remove_padding(teacher_output, attention_mask)
 
@@ -62,6 +63,9 @@ def get_mha_lstsq(
         # no attention_mask ?? hidden_states = remove_padding(hidden_states, attention_mask)
         # input_tensor = remove_padding(input_tensor, attention_mask)
 
+        # hidden_states = hidden_states.view(-1, num_attention_heads, attention_head_size)
+        batch_size = hidden_states.shape[0]
+        hidden_states = hidden_states.reshape(batch_size, -1, num_attention_heads, attention_head_size)
         hidden_states = hidden_states.view(-1, num_attention_heads, attention_head_size)
         hidden_states = hidden_states.permute(1, 0, 2)
         hidden_states = hidden_states.index_select(dim=0, index=nonzero_heads)
