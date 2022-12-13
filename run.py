@@ -43,15 +43,23 @@ Evaluate an experiment
     model       = config.models()
 
     logging.info(f"Building index...")
-    start       = time()
+    build_start       = time()
     model.build(dataset.images, batch_size=config.batch_size, verbose=True)
-    end         = time()
-    logging.info(f"Building cost {end-start:7.3f}s")
+    build_end         = time()
+    logging.info(f"Building cost:{build_end-build_start:7.3f}s")
 
     topk_score  = np.array([0.0 for i in range(len(config.topk))])
     times       = []
 
-    for i, text in tqdm(enumerate(dataset.captions),total=len(dataset.captions), desc="Query Caption"):
+    index       = np.arange(len(dataset.images))
+    np.random.shuffle(index)
+    if config.query_rate is not None:
+        index   = index[:int(config.query_rate * len(index))]
+    labels      = index 
+    inputs      = [dataset.captions[i]  for i in index]
+
+    logging.info(f"Querying...")
+    for label, text in tqdm(zip(labels,inputs),total=len(index), desc="Query Caption"):
 
         start   = time()
         indices = model.query(text, topk=max(config.topk), topm=config.topm, batch_size=config.batch_size)
@@ -59,15 +67,20 @@ Evaluate an experiment
         times.append(end-start)
 
         for j,k in enumerate(config.topk):
-            if i in indices[:k]:
+            if label in indices[:k]:
                 topk_score[j] += 1.0
-
-    topk_score /= len(dataset)
-
-    logging.info("-------topk score-------")
+    times = np.array(times)
+    query_end = time()
+    topk_score /= len(index)
+    logging.info(f"Query cost:{sum(times):7.3f}s, time each query:{np.mean(times):5.3f}({np.std(times):5.3f})s, max a query:{np.max(times):5.3f}s, min a query:{np.min(times):5.3f}s\n\n")
+    logging.info(f"Build and Query time:{query_end - build_start:7.3f}s\n\n")
+    
+    model.log_cache()
+    
+    logging.info("\n-------topk score-------")
     for k, score in zip(config.topk, topk_score):
         logging.info(f"top{k}:{score:7.5f}")
-    logging.info("-----time each text-----")
+    logging.info("\n-----time each text-----")
     for i, t in enumerate(times):
         logging.info(f"[{i}]:{t:5.3f}s")
 

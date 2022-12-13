@@ -1,18 +1,15 @@
-# CLIP
-
 dataset.name    = 'MSCOCO'
 models.name     = ['OpenAIFLIP','OpenAICLIP']
 topk            = [1,5,10]
-topm            = [10]
+topm            = [25]
 seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cpu'
-
+query_rate      = 0.1
 
 
 [dataset.kwargs]
-n_samples = 20
-layout    = 'caption'
+layout    = 'image-caption[0]'
 
 [models.0.kwargs]
 p = 0.5

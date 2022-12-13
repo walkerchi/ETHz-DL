@@ -1,4 +1,4 @@
-# OpenAICLIp
+# OpenAICLIP
 dataset.name    = 'MSCOCO'
 models.name     = ['OpenAICLIP']
 topk            = [1, 5, 10]
@@ -6,9 +6,11 @@ seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cpu'
 query_rate      = 0.1
+batch_size      = 4
 
 [dataset.kwargs]
-layout    = 'image-caption[0]'
+n_samples       = 500
+layout          = 'image-caption[0]'
 
 [models.0.kwargs]
 model_str = "ViT-B/32"

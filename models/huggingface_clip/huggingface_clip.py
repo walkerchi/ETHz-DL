@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import torch
 import torch.nn as nn
 from tqdm import tqdm
@@ -12,15 +13,21 @@ CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file_
 
 
 class ImageLoader(DataLoader):
-    def __init__(self,  model_str:str, images:List[PILImage], batch_size:int, **kwargs):
+    def __init__(self, data:dict, batch_size:int, **kwargs):
+        
         super().__init__(
-            dataset     = images, 
+            dataset     = np.arange(len(next(iter(data.values())))), 
             batch_size  = batch_size,
+            collate_fn  = self.collate_fn,
             **kwargs
         )
-        self.processor = CLIPProcessor.from_pretrained(model_str)
-    def collate_fn(self, images:List[PILImage]):
-        return self.processor(images)
+        self.data = data
+
+    def collate_fn(self, index:List[int]):
+        batch = {}
+        for k,v in self.data.items():
+            batch[k] = v[index]
+        return batch
 
 class TextLoader(DataLoader):
     def __init__(self, model_str:str, texts:List[str], batch_size:int, **kwargs):
@@ -31,7 +38,7 @@ class TextLoader(DataLoader):
         )    
         self.tokenizer = CLIPTokenizer.from_pretrained(model_str)
     def collate_fn(self, texts:List[str]):
-        return tokenize(["a photo of " + text for text in texts])
+        return self.tokenizer(["a photo of " + text for text in texts])
 
 
 class HuggingFaceCLIP(nn.Module):
@@ -106,7 +113,7 @@ class HuggingFaceCLIP(nn.Module):
                 emb_images.append(emb_batch)
             emb_images = torch.cat(emb_images, 0)
         else:
-            images = ImageLoader(self.model_str, images, batch_size)
+            images = ImageLoader(self.preprocess_images(images), batch_size)
             if verbose:
                 images = tqdm(images, total=len(images), desc="Image Encoding")
             for batch in images:
@@ -115,11 +122,10 @@ class HuggingFaceCLIP(nn.Module):
                         emb_batch  = self.model.get_image_features(**batch)
                 else:
                     emb_batch = self.model.get_image_features(**batch)
-                emb_batch  = self.encode(batch)
                 if emb_batch.device != torch.device(device):
                     emb_batch = emb_batch.to(device)
                 emb_images.append(emb_batch)
-            emb_images = torch.cat(emb_batch, 0)
+            emb_images = torch.cat(emb_images, 0)
         if is_single:
             return emb_images[0] 
         else:
@@ -184,7 +190,7 @@ class HuggingFaceCLIP(nn.Module):
                 if emb_batch.device != torch.device(device):
                     emb_batch = emb_batch.to(device)
                 emb_texts.append(emb_batch)
-            emb_texts = torch.cat(emb_batch, 0)
+            emb_texts = torch.cat(emb_texts, 0)
         if is_single:
             return emb_texts[0] 
         else:

@@ -2,34 +2,19 @@ import os
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader,Dataset
+from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
 from typing import List,Union,Optional
 from PIL.ImageFile import ImageFile as PILImage
 from PIL import Image 
 from .clip import *
+try:
+    from torchvision.transforms import InterpolationMode
+    BICUBIC = InterpolationMode.BICUBIC
+except ImportError:
+    BICUBIC = Image.BICUBIC
 
 CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),".cache")
-
-class ImageLoader(DataLoader):
-    def __init__(self,  resolution:int, images:List[PILImage], batch_size:int, **kwargs):
-        super().__init__(
-            dataset     = images, 
-            batch_size  = batch_size,
-            **kwargs
-        )
-        self.transform = Compose([
-            Resize(resolution, interpolation=BICUBIC),
-            CenterCrop(resolution),
-            lambda image:image.convert("RGB"),
-            ToTensor(),
-            Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
-        ])
-    def collate_fn(self, images:List[PILImage]):
-        results = []
-        for image in images:
-            results.append(self.transform(image))
-        results = torch.stack(results,0)
-        return results
 
 class TextLoader(DataLoader):
     def __init__(self, texts:List[str], batch_size:int, **kwargs):
@@ -87,7 +72,8 @@ class OpenAICLIP(nn.Module):
             -------
                 torch.LongTensor[n_batch, seq_len]
         """
-        return tokenize(["a photo of " + text for text in texts])
+        with torch.no_grad():
+            return tokenize(["a photo of " + text for text in texts])
 
     def encode_images(self, images:Union[List[PILImage], PILImage], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False)->torch.Tensor:
         """
@@ -114,6 +100,7 @@ class OpenAICLIP(nn.Module):
                             the embedding of the encoded images
                             the device should be in cpu, no matter what the device for the encoder
         """
+        assert len(images) > 0
         is_single = False
         if isinstance(images, PILImage):
             images = [images]
@@ -134,7 +121,7 @@ class OpenAICLIP(nn.Module):
                 emb_images.append(emb_batch)
             emb_images = torch.cat(emb_images, 0)
         else:
-            images = ImageLoader(self.resolution, images, batch_size)
+            images = DataLoader(self.preprocess_images(images), batch_size=batch_size)
             if verbose:
                 images = tqdm(images, total=len(images), desc="Image Encoding")
             for batch in images:
@@ -146,7 +133,7 @@ class OpenAICLIP(nn.Module):
                 if emb_batch.device != torch.device(device):
                     emb_batch = emb_batch.to(device)
                 emb_images.append(emb_batch)
-            emb_images = torch.cat(emb_batch, 0)
+            emb_images = torch.cat(emb_images, 0)
         if is_single:
             return emb_images[0] 
         else:
@@ -207,7 +194,7 @@ class OpenAICLIP(nn.Module):
                 if emb_batch.device != torch.device(device):
                     emb_batch = emb_batch.to(device)
                 emb_texts.append(emb_batch)
-            emb_texts = torch.cat(emb_batch, 0)
+            emb_texts = torch.cat(emb_texts, 0)
         if is_single:
             return emb_texts[0] 
         else:

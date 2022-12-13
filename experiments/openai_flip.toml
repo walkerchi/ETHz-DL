@@ -1,0 +1,18 @@
+# OpenAIFLIP
+dataset.name    = 'MSCOCO'
+models.name     = ['OpenAIFLIP']
+topk            = [1, 5, 10, 15 ,20, 25, 30, 35, 40]
+seed            = 123456789
+logging_level   = 'INFO'
+device          = 'cpu'
+query_rate      = 0.1
+batch_size      = 8
+
+[dataset.kwargs]
+n_samples       = 500
+layout          = 'image-caption[0]'
+
+[models.0.kwargs]
+p               = 0.5
+model_str       = "ViT-B/32"
+

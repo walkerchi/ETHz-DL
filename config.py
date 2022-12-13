@@ -49,10 +49,13 @@ class ModelsConfig:
                 the length should be the same as name 
         device: str
                 the runtime device for each CLIP
+        cache_type:str
+                the cache_type for CasCLIP
     """
 
-    def __init__(self,config, device):
+    def __init__(self,config, device, cache_type):
         self.device = device
+        self.cache_type = cache_type
         self.name   = config['name']
         self.kwargs = [config[str(i)]['kwargs'] for i in range(len(self.name))]
         assert isinstance(self.device, str)
@@ -73,7 +76,7 @@ class ModelsConfig:
                 CasCLIP instance 
         """
         logging.info("loading models...")
-        return models.CasCLIP(*[getattr(models,self.name[i])(**self.kwargs[i]).to(self.device) for i in range(len(self))])
+        return models.CasCLIP([getattr(models,self.name[i])(**self.kwargs[i]).to(self.device) for i in range(len(self))], cache_type=self.cache_type)
 
 class Config:
     """Configuration for the experiment
@@ -98,6 +101,11 @@ class Config:
                     The filename of the configure file.
                     It's used for logging, 
                     the log will be writen to a timed-named file under the folder f`.log\{filename}` 
+        query_rate: Optional[float], default None
+                    query rate for the experiment,
+                    if 0.1, the experiment will carry out on 10% of the texts
+        cache_type: str, default `sparse`
+                    the cache type in CasCLIP, choose from [`sparse`, `dense`]
     """
     def __init__(self,config):
         
@@ -108,9 +116,11 @@ class Config:
         self.device  = config['device']            if 'device'        in config else DEFAULT_DEVICE
         self.batch_size = config['batch_size']     if 'batch_size'    in config else None
         self.filename= config['filename']
+        self.query_rate   =config['query_rate']    if 'query_rate'    in config else None
+        self.cache_type   =config['cache_type']    if 'cache_type'    in config else "sparse"
 
         self.dataset = DatasetConfig(config['dataset'])
-        self.models  = ModelsConfig(config['models'], self.device)
+        self.models  = ModelsConfig(config['models'], self.device, self.cache_type)
         
         assert self.topm is None or isinstance(self.topm, list), f"`topm` in configure file should be list of int or `None`, but got {self.topm}"
         assert isinstance(self.topk, list), f"`topk` in configure file should be list of int, but got {self.topk}"
@@ -128,7 +138,10 @@ class Config:
             "topk":     self.topk,
             "seed":     self.seed,
             "logging_level":self.logging_level,
-            "device":   self.device
+            "device":   self.device,
+            "batch_size":self.batch_size,
+            "query_rate":self.query_rate,
+            "cache_type":self.cache_type
         }
 
     def init_random_seed(self):
@@ -150,5 +163,5 @@ class Config:
             level       = getattr(logging,self.logging_level)
         ) 
         logging.getLogger().addHandler(logging.StreamHandler())
-        logging.info(toml.dumps(self.to_dict()))
+        logging.info("\n"+toml.dumps(self.to_dict()))
 

@@ -59,13 +59,17 @@ class MSCOCO:
         else:
             caption_index = int(re.findall('-?\d',layout)[0])
             if n_samples is not None:
-                assert n_samples <= length, f"the number of samples should not be greater than the total length"
+                assert n_samples <= len(ann['annotations']), f"the number of samples should not be greater than the total length"
+            else:
+                n_samples = len(ann['annotations'])
             df = pd.DataFrame.from_dict(ann['annotations'])
             images   = []
             captions = []
             for image_id, group in df.groupby('image_id'):
-                images.append(imageid2filename[item['image_id']])
+                images.append(imageid2filename[image_id])
                 captions.append(group['caption'].iloc[caption_index])
+                if len(images) >= n_samples:
+                    break
 
 
         self._images   = [os.path.join(image_path, image) for image in images]
