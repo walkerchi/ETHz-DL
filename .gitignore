@@ -1,17 +1,6 @@
 __pycache__
-.ckpt
-.coco
-.dataset
-datasets
-.log
-.transformer
-.mobilenet/project.pt
-.mobilenet/project_1.pt 
-.mobilenet/project_2.pt
-distill.ipynb
-timer
-test*
-distill_scr.py 
-distill_cos_.py
-fisher_pruning/dataset/*
+fisher_pruning/dataset/val2017/*
+fisher_pruning/dataset/annotations_trainval2017/*
+fisher_pruning/dataset/__pycache__/
+
 

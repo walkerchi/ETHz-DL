@@ -1,0 +1,13 @@
+2022-12-05 17:56:33 - root - INFO      - verify.py : 204 line - Namespace(batch_size=16, cifar100_path='./.dataset/cifar100', cuda=False, load_path='./.mobilenet/project_2.pt', log_path='.log/head_only5.log', mobilenet_path='./.mobilenet', n_layers=1, topk=[1, 3, 5, 10, 15, 20], transformer_path='./.transformer/clip-vit-base-patch32')
+2022-12-05 17:56:33 - urllib3.connectionpool - DEBUG     - connectionpool.py : 1003 line - Starting new HTTPS connection (1): huggingface.co:443
+2022-12-05 17:56:33 - urllib3.connectionpool - DEBUG     - connectionpool.py : 456 line - https://huggingface.co:443 "HEAD /openai/clip-vit-base-patch32/resolve/main/config.json HTTP/1.1" 200 0
+2022-12-05 17:56:36 - urllib3.connectionpool - DEBUG     - connectionpool.py : 1003 line - Starting new HTTPS connection (1): huggingface.co:443
+2022-12-05 17:56:36 - urllib3.connectionpool - DEBUG     - connectionpool.py : 456 line - https://huggingface.co:443 "HEAD /openai/clip-vit-base-patch32/resolve/main/preprocessor_config.json HTTP/1.1" 200 0
+2022-12-05 17:56:36 - urllib3.connectionpool - DEBUG     - connectionpool.py : 1003 line - Starting new HTTPS connection (1): huggingface.co:443
+2022-12-05 17:56:37 - urllib3.connectionpool - DEBUG     - connectionpool.py : 456 line - https://huggingface.co:443 "HEAD /openai/clip-vit-base-patch32/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+2022-12-05 18:12:41 - root - INFO      - verify.py : 156 line - top1:0.1916(0.09625196101898392)
+2022-12-05 18:12:41 - root - INFO      - verify.py : 156 line - top3:0.3276(0.12177126097729299)
+2022-12-05 18:12:41 - root - INFO      - verify.py : 156 line - top5:0.4042(0.12488939106265191)
+2022-12-05 18:12:41 - root - INFO      - verify.py : 156 line - top10:0.519(0.12510595509407216)
+2022-12-05 18:12:41 - root - INFO      - verify.py : 156 line - top15:0.593(0.12073110618229255)
+2022-12-05 18:12:41 - root - INFO      - verify.py : 156 line - top20:0.6493(0.11582642185615509)

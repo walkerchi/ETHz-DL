@@ -14,12 +14,12 @@ $$
 \begin{aligned}
 cd fisher_pruning
 python3 main.py --num_samples 2048 --constraint 0.5 --seed 5
-\begin{aligned}
+\end{aligned}
+$$
 This will use 2048 samples from mscoco and try to reduce the FLOP constraint to 50%.
 The calculations are based on a constant number of patches.
 The resulting head and neuron masks will be stored in fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/mac/0.5/seed_5/.
 Note: The constraint is only a broad estimate, because the number of image patches is variable in the MSCOCO dataset.
-$$
 
 ## 2. Introduction
 

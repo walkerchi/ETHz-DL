@@ -108,8 +108,6 @@ def collect_layer_inputs(
 
         handle = hijack_input(target_layer, inputs)
         for batch in prev_inputs:
-            # for k, v in batch.items():
-                # batch[k] = v.to("cuda")
             with MaskNeurons(model.vision_model, neuron_mask[:1]):
                 batch[0]['pixel_values'] = torch.squeeze(batch[0]['pixel_values'])
                 model.get_image_features(**batch[0], head_mask=head_mask)
@@ -128,5 +126,4 @@ def collect_layer_inputs(
             batch[0] = prev_output[0]
             batch[2] = head_mask[layer_idx] # .view(1, -1, 1, 1)
             inputs.append(batch)
-
     return inputs
