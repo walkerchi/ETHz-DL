@@ -6,12 +6,12 @@ topm            = [35]
 seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cpu'
-query_rate      = 0.1
+query_rate      = 0.01
 batch_size      = 8
 cache_type      = "dense"
 
 [dataset.kwargs]
-n_samples       = 500
+n_samples       = 1000
 layout    = 'image-caption[0]'
 
 [models.0.kwargs]
