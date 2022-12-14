@@ -20,7 +20,7 @@ def test_model(model, head_mask, neuron_mask, dataloader):
     # return unpruned moldel image encoding as target
     dataloader.dataset.dataset.teacher = True # twice .dataset, because dataset is a subset, subset.dataset gives the mscoco
     losses = [[], [], [], []] # in order head loss, neuron loss, both loss, rand loss
-    h_masks = [head_mask, None, head_mask, None]#head_rand_mask]
+    h_masks = [head_mask, None, head_mask, head_rand_mask]
     n_masks = [None, neuron_mask, neuron_mask, neuron_rand_mask]
     # only head mask
     for i in range(len(losses)):

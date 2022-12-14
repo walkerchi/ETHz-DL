@@ -189,7 +189,7 @@ def rescale_mask(
             prev_inputs=dataloader if layer_idx == 0 else student_inputs,
         )
 
-        if torch.count_nonzero(student_head_mask[layer_idx]) != 0 and layer_idx != 0:
+        if torch.count_nonzero(student_head_mask[layer_idx]) != 0:# and layer_idx != 0:
             ATA, ATB = get_mha_lstsq(
                 model.vision_model,
                 config,

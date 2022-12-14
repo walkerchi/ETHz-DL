@@ -2,7 +2,6 @@ import argparse
 import logging
 import os
 import time
-# python3 main.py --constraint 0.5 --num_samples 2048
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset
@@ -46,7 +45,7 @@ parser.add_argument("--constraint", type=float, default=0.5,
 parser.add_argument("--mha_lut", type=str, default=None)
 parser.add_argument("--ffn_lut", type=str, default=None)
 parser.add_argument("--num_samples", type=int, default=128)
-parser.add_argument("--seed", type=int, default=7)
+parser.add_argument("--seed", type=int, default=8)
 
 
 def main():
@@ -90,16 +89,15 @@ def main():
 
     # Load the training dataset
     if args.task_name == 'mscoco':
-        training_dataset = MSCOCO(3000, args.model_name)
+        training_dataset = MSCOCO(2048, args.model_name)
     else:
         raise NotImplementedError
 
     # Sample the examples to be used for search
     sample_dataset = Subset(
         training_dataset,
-        np.random.choice(len(training_dataset), args.num_samples).tolist(),
-    )
-    sample_batch_size = int((12 if IS_SQUAD else 32) * (0.5 if IS_LARGE else 1))
+        np.random.choice(len(training_dataset), args.num_samples).tolist())
+    sample_batch_size = 32
     sample_dataloader = DataLoader(
         sample_dataset,
         batch_size=sample_batch_size,
@@ -173,7 +171,6 @@ def main():
     test_dataloader = DataLoader(
         test_dataset,
         batch_size=test_batch_size,
-        #collate_fn=collate_fn,
         shuffle=False,
         pin_memory=True,
     )
@@ -184,7 +181,6 @@ def main():
     logger.info(f"Losses for neuron mask only: {losses[1]}")
     logger.info(f"Losses for both masks: {losses[2]}")
     logger.info(f"Losses for random binary masks with same number of zeros: {losses[3]}")
-    breakpoint()
     # Save the masks
     torch.save(head_mask, os.path.join(args.output_dir, "head_mask.pt"))
     torch.save(neuron_mask, os.path.join(args.output_dir, "neuron_mask.pt"))

@@ -16,7 +16,6 @@ script_dir = os.path.dirname( __file__ )
 module_dir = os.path.join( script_dir, 'fisher_pruning' )
 sys.path.append( module_dir )
 from fisher_pruning.modeling_clip import CLIPModel as CLIPModel_pruned
-print(sys.path)
 from fisher_pruning.dataset.MSCOCO import MSCOCO, test_speed
 from fisher_pruning.evaluate.eval import test_model
 
