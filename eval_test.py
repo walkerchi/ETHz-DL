@@ -28,8 +28,8 @@ if __name__ == "__main__":
     config = model.config.vision_config
     # load masks
     base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/mac/'
-    restriction = '0.5'
-    seed = 5
+    restriction = '0.7'
+    seed = 7
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt')
     neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt')
     breakpoint()

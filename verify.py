@@ -84,13 +84,8 @@ class MobileCLIP(nn.Module):
         return torch.load(path)
     @staticmethod
     def from_fisher_pruning(seed=0):
-        # path=f'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/mac/0.5/seed_{seed}/'
-        # head_mask = torch.load(path+'head_mask.pt')
-        # neuron_mask = torch.load(path+'neuron_mask.pt')
-        # clip = CLIPModel_pruned.from_pretrained('openai/clip-vit-base-patch32')
         clip = torch.load(f"pruned_models/clip-vit-base-patch32-pruned_{seed}.pt")
         mobileclip = MobileCLIP()
-        # mobileclip.head_mask = head_mask
         mobileclip.text_model = clip.text_model
         mobileclip.text_projection = clip.text_projection
         mobileclip.visual_model = clip.vision_model

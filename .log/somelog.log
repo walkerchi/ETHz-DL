@@ -3,3 +3,9 @@
 2022-12-15 13:50:37 - urllib3.connectionpool - DEBUG     - connectionpool.py : 456 line - https://huggingface.co:443 "HEAD /openai/clip-vit-base-patch32/resolve/main/preprocessor_config.json HTTP/1.1" 200 0
 2022-12-15 13:50:37 - urllib3.connectionpool - DEBUG     - connectionpool.py : 1003 line - Starting new HTTPS connection (1): huggingface.co:443
 2022-12-15 13:50:37 - urllib3.connectionpool - DEBUG     - connectionpool.py : 456 line - https://huggingface.co:443 "HEAD /openai/clip-vit-base-patch32/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+2022-12-15 14:03:49 - root - INFO      - verify.py : 155 line - top1:0.0872(0.07328819823136601)
+2022-12-15 14:03:49 - root - INFO      - verify.py : 155 line - top3:0.1904(0.10215351193179802)
+2022-12-15 14:03:49 - root - INFO      - verify.py : 155 line - top5:0.253(0.11041286156965592)
+2022-12-15 14:03:49 - root - INFO      - verify.py : 155 line - top10:0.3669(0.12451160588475275)
+2022-12-15 14:03:49 - root - INFO      - verify.py : 155 line - top15:0.4491(0.12350279349067372)
+2022-12-15 14:03:49 - root - INFO      - verify.py : 155 line - top20:0.5161(0.126033884332746)
