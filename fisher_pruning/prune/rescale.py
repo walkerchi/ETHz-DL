@@ -189,7 +189,7 @@ def rescale_mask(
             prev_inputs=dataloader if layer_idx == 0 else student_inputs,
         )
 
-        if torch.count_nonzero(student_head_mask[layer_idx]) != 0:# and layer_idx != 0:
+        if torch.count_nonzero(student_head_mask[layer_idx]) != 0 and layer_idx != 0:
             ATA, ATB = get_mha_lstsq(
                 model.vision_model,
                 config,
@@ -200,7 +200,7 @@ def rescale_mask(
                 rescaled_neuron_mask,
                 layer_idx,
             )
-            scale_factor, success = lsmr_cupy_solver_no_layer_norm(ATA, ATB)
+            scale_factor, success = lsmr_cupy_solver(ATA, ATB)
             if not success:
                 print('No success in solving lsmr problem.') # break
             # scale_factor = scale_factor[:-1]
@@ -224,7 +224,7 @@ def rescale_mask(
                 layer_idx,
                 cls_only=cls_only,
             )
-            scale_factor, success = lsmr_cupy_solver_no_layer_norm(ATA, ATB) # lsmr_cupy_solver(ATA, ATB)
+            scale_factor, success = lsmr_cupy_solver(ATA, ATB) # lsmr_cupy_solver(ATA, ATB)
             if not success:
                 print('No success in solving lsmr problem.') # break
             if scale_factor.max() > 10 or scale_factor.min() < -10:
