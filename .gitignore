@@ -2,5 +2,8 @@ __pycache__
 fisher_pruning/dataset/val2017/*
 fisher_pruning/dataset/annotations_trainval2017/*
 fisher_pruning/dataset/__pycache__/
+pruned_models/*
+.dataset
+.transformer
 
 

@@ -1,16 +1,18 @@
 import numpy as np
+import time
 import torch
 from torch.utils.data import DataLoader, Subset
 from transformers import (
     set_seed,
     CLIPProcessor,
-    CLIPModel,
     CLIPTokenizer
 )
-from fisher_pruning.modeling_clip import CLIPModel as CLIPModel_pruned
+from fisher_pruning.modeling_clip import CLIPModel as CLIPModel_unpruned
+from modeling_pruned_clip import CLIPModel as CLIPModel_p
 from fisher_pruning.dataset.MSCOCO import MSCOCO
+from fisher_pruning.utils.arch import apply_neuron_mask
 
-def prune(model):
+def prune(model, head_mask, neuron_mask):
 
     for idx, layer in enumerate(model.vision_model.encoder.layers):
         prune_neurons(layer.mlp, neuron_mask[idx])
@@ -66,16 +68,32 @@ if __name__ == '__main__':
     base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/mac/'
     restriction = '0.7'
     seed = 7
+    save_path = f'pruned_models/clip-vit-base-patch32-pruned_{seed}.pt'
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt')
     neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt')
-    pruned_model = CLIPModel.from_pretrained(model_name)
-    unpruned_model = CLIPModel_pruned.from_pretrained(model_name)
+    pruned_model = CLIPModel_p.from_pretrained(model_name)
     tokenizer = CLIPProcessor.from_pretrained(model_name)
 
     # prune the model
-    pruned_model = prune(pruned_model)
+    pruned_model = prune(pruned_model, head_mask, neuron_mask)
 
-    # verify wether it is the same
+    # verify wether the outputs are the same (besides rounding error)
+    unpruned_model = CLIPModel_unpruned.from_pretrained(model_name)
+    handles = apply_neuron_mask(unpruned_model.vision_model, neuron_mask)
+    ds = MSCOCO(8, model_name)
+    dl = DataLoader(ds, 8)
+    for batch in dl:
+        batch[0]['pixel_values'] = torch.squeeze(batch[0]['pixel_values'])
+        t0 = time.perf_counter()
+        outputs_pruned = pruned_model.get_image_features(**batch[0])
+        t1 = time.perf_counter()
+        outputs_unpruned = unpruned_model.get_image_features(**batch[0], head_mask=head_mask)
+        t2 = time.perf_counter()
+    for handle in handles:
+        handle.remove()
+    print(f"pruned time: {t1-t0} unpruned time: {t2-t1}")
+    diff = (outputs_pruned - outputs_pruned).abs()
+    if diff.count_nonzero() == 0:
+        print("SUCCESS: The models are equivalent.")
+        torch.save(pruned_model, save_path)
 
-
-    breakpoint()

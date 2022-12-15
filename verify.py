@@ -12,6 +12,7 @@ import argparse
 import os
 import logging
 from fisher_pruning.modeling_clip import CLIPModel as CLIPModel_pruned
+from modeling_pruned_clip import CLIPModel as CLIPModel_p
 
 class Cifar100Loader(torch.utils.data.DataLoader):
     def __init__(self,
@@ -83,12 +84,13 @@ class MobileCLIP(nn.Module):
         return torch.load(path)
     @staticmethod
     def from_fisher_pruning(seed=0):
-        path=f'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/mac/0.5/seed_{seed}/'
-        head_mask = torch.load(path+'head_mask.pt')
-        neuron_mask = torch.load(path+'neuron_mask.pt')
-        clip = CLIPModel_pruned.from_pretrained('openai/clip-vit-base-patch32')
+        # path=f'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/mac/0.5/seed_{seed}/'
+        # head_mask = torch.load(path+'head_mask.pt')
+        # neuron_mask = torch.load(path+'neuron_mask.pt')
+        # clip = CLIPModel_pruned.from_pretrained('openai/clip-vit-base-patch32')
+        clip = torch.load(f"pruned_models/clip-vit-base-patch32-pruned_{seed}.pt")
         mobileclip = MobileCLIP()
-        mobileclip.head_mask = head_mask
+        # mobileclip.head_mask = head_mask
         mobileclip.text_model = clip.text_model
         mobileclip.text_projection = clip.text_projection
         mobileclip.visual_model = clip.vision_model
@@ -99,10 +101,7 @@ class MobileCLIP(nn.Module):
         torch.save(self, path)
         return self
     def visual_encode(self, x, is_norm=True):
-        if self.head_mask is not None:
-            x = self.visual_model(x, head_mask=self.head_mask)
-        else:
-            x = self.visual_model(x)
+        x = self.visual_model(x)
         x = x[1]
         x = self.visual_projection(x)
         if is_norm:
@@ -122,7 +121,7 @@ class MobileCLIP(nn.Module):
 
 
 def main(config):
-    mobileclip = MobileCLIP.from_fisher_pruning(seed=5) #MobileCLIP.from_assemble(config.n_layers, config.load_path, config.transformer_path, config.mobilenet_path)
+    mobileclip = MobileCLIP.from_fisher_pruning(seed=7) #MobileCLIP.from_assemble(config.n_layers, config.load_path, config.transformer_path, config.mobilenet_path)
     dataloader = Cifar100Loader(config.batch_size, config.cifar100_path, config.transformer_path)
     def to_cuda(x):
         if isinstance(x, (torch.Tensor,torch.nn.Module)):
