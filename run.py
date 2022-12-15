@@ -13,8 +13,8 @@ def main():
 """
 Evaluate an experiment
 """)
-    parser.add_argument( 
-        "--id", 
+    parser.add_argument(
+        "--id",
         type    =str,
         default =None,
         help    =f"configure file id of the experiment, Example: `1`->`0001.toml`",
@@ -25,10 +25,10 @@ Evaluate an experiment
         default =None,
         help    =f"configure filename of the experiment, Example: `test`->`test.toml`")
     args = parser.parse_args()
-    
+
     if args.name is None:
         assert args.id is not None, "either `--id` or `--name` should be assigned"
-        filename = args.id.zfill(4) 
+        filename = args.id.zfill(4)
     else:
         assert args.name is not None, "either `--id` or `--name` should be assigned"
         filename = args.name
@@ -37,8 +37,8 @@ Evaluate an experiment
     config = toml.load(file_path)
     config['filename'] = filename
     config = Config(config)
-    
-    
+
+
     dataset     = config.dataset()
     model       = config.models()
 
@@ -55,7 +55,7 @@ Evaluate an experiment
     np.random.shuffle(index)
     if config.query_rate is not None:
         index   = index[:int(config.query_rate * len(index))]
-    labels      = index 
+    labels      = index
     inputs      = [dataset.captions[i]  for i in index]
 
     logging.info(f"Querying...")
@@ -74,9 +74,9 @@ Evaluate an experiment
     topk_score /= len(index)
     logging.info(f"Query cost:{sum(times):7.3f}s, time each query:{np.mean(times):5.3f}({np.std(times):5.3f})s, max a query:{np.max(times):5.3f}s, min a query:{np.min(times):5.3f}s\n\n")
     logging.info(f"Build and Query time:{query_end - build_start:7.3f}s\n\n")
-    
+
     model.log_cache()
-    
+
     logging.info("\n-------topk score-------")
     for k, score in zip(config.topk, topk_score):
         logging.info(f"top{k}:{score:7.5f}")

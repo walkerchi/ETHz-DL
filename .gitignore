@@ -7,13 +7,13 @@ datasets/flickr30/results.csv
 **.zip
 experiments/*/
 *test.ipynb
-models/pruned/v1_post_training_pruning/retraining-free-pruning/dataset/val2017
-models/pruned/v1_post_training_pruning/retraining-free-pruning/dataset/annotations_trainval2017
 distill*
 test*
 .log
 .cache
 .log
 .mobilenet
+.dataset
 .transformer
 .ckpt
+models/huggingface_pruned_clip/pruned_models

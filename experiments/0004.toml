@@ -1,0 +1,19 @@
+# Small and big CLIP from huggingface
+dataset.name    = 'MSCOCO'
+models.name     = ['HuggingFacePrunedCLIP','HuggingFaceCLIP']
+topm            = [50]
+topk            = [1, 5, 10]
+seed            = 123456789
+logging_level   = 'INFO'
+device          = 'cpu'
+
+[dataset.kwargs]
+n_samples = 50
+layout    = 'caption'
+
+[models.1.kwargs]
+model_str = 'openai/clip-vit-large-patch14'
+
+[models.0.kwargs]
+model_str = 'openai/clip-vit-base-patch32'
+pruning_version = 'vit-base32_fisher_07_7.pt'

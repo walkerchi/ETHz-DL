@@ -1,7 +1,0 @@
-numpy
-scipy
-cupy
-tqdm
-torch
-datasets
-transformers

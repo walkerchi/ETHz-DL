@@ -14,9 +14,9 @@ CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file_
 
 class ImageLoader(DataLoader):
     def __init__(self, data:dict, batch_size:int, **kwargs):
-        
+
         super().__init__(
-            dataset     = np.arange(len(next(iter(data.values())))), 
+            dataset     = np.arange(len(next(iter(data.values())))),
             batch_size  = batch_size,
             collate_fn  = self.collate_fn,
             **kwargs
@@ -35,7 +35,7 @@ class TextLoader(DataLoader):
             dataset    = texts,
             batch_size = batch_size,
             **kwargs
-        )    
+        )
         self.tokenizer = CLIPTokenizer.from_pretrained(model_str)
     def collate_fn(self, texts:List[str]):
         return self.tokenizer(["a photo of " + text for text in texts])
@@ -48,7 +48,7 @@ class HuggingFaceCLIP(nn.Module):
             os.mkdir(cache_dir)
         self.tokenizer       = CLIPTokenizer.from_pretrained(model_str, cache_dir=cache_dir)
         self.processor       = CLIPProcessor.from_pretrained(model_str, cache_dir=cache_dir)
-        self.model           = CLIPModel.from_pretrained(model_str, cache_dir=cache_dir)
+        self.model           = CLIPModel.from_pretrained(model_str)#, cache_dir=cache_dir)
         self.model_str       = model_str
         self.no_grad         = True
     @property
@@ -63,7 +63,7 @@ class HuggingFaceCLIP(nn.Module):
 
     def preprocess_images(self, images:List[PILImage]):
         return self.processor(images=images, return_tensors="pt")
-    
+
     def preprocess_texts(self, texts:List[str]):
         texts = ["a photo of" + text for text in texts]
         return self.tokenizer(texts, padding=True, return_tensors="pt")
@@ -84,9 +84,9 @@ class HuggingFaceCLIP(nn.Module):
                             As the embeding is so big, so sometimes we should store them in cpu rather than gpu
                             Of course, the runtime device is different from output device which you can set through `.cpu()`  or `.cuda()`
                 verbose:    bool
-                            if verbose, the tqdm progress bar will be showed 
+                            if verbose, the tqdm progress bar will be showed
                             else, the encoding process will keep silent
-            
+
             Returns
             -------
                 emb_images: torch.FloatTensor[n_image, n_emb] or [e_emb]
@@ -127,10 +127,10 @@ class HuggingFaceCLIP(nn.Module):
                 emb_images.append(emb_batch)
             emb_images = torch.cat(emb_images, 0)
         if is_single:
-            return emb_images[0] 
+            return emb_images[0]
         else:
             return emb_images
-    
+
     def encode_texts(self, texts:Union[List[str],str], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False)->torch.Tensor:
         """
             Parameters
@@ -147,7 +147,7 @@ class HuggingFaceCLIP(nn.Module):
                             As the embeding is so big, so sometimes we should store them in cpu rather than gpu
                             Of course, the runtime device is different from output device which you can set through `.cpu()`  or `.cuda()`
                 verbose:    bool
-                            if verbose, the tqdm progress bar will be showed 
+                            if verbose, the tqdm progress bar will be showed
                             else, the encoding process will keep silent
             Returns
             -------
@@ -180,7 +180,7 @@ class HuggingFaceCLIP(nn.Module):
             if verbose:
                 texts = tqdm(texts, total=len(texts), desc="Text Encoding")
             for batch in texts:
-                
+
                 if self.no_grad:
                     with torch.no_grad():
                         emb_batch  = self.model.get_text_features(**batch)
@@ -192,9 +192,9 @@ class HuggingFaceCLIP(nn.Module):
                 emb_texts.append(emb_batch)
             emb_texts = torch.cat(emb_texts, 0)
         if is_single:
-            return emb_texts[0] 
+            return emb_texts[0]
         else:
             return emb_texts
- 
+
 
 
