@@ -68,7 +68,7 @@ if __name__ == '__main__':
     base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/mac/'
     restriction = '0.7'
     seed = 7
-    save_path = f'pruned_models/clip-vit-base-patch32-pruned_{seed}.pt'
+    save_path = f'pruned_models/vitB32_pruned_{seed}.pt'
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt')
     neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt')
     pruned_model = CLIPModel_p.from_pretrained(model_name)

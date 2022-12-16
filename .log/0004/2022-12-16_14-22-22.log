@@ -1,0 +1,96 @@
+INFO:root:
+topm = [ 50,]
+topk = [ 1, 5, 10,]
+seed = 123456789
+logging_level = "INFO"
+device = "cpu"
+cache_type = "sparse"
+
+[dataset]
+name = "MSCOCO"
+
+[models]
+name = [ "HuggingFacePrunedCLIP", "HuggingFaceCLIP",]
+
+[dataset.kwargs]
+n_samples = 50
+layout = "caption"
+
+[models.0]
+model_str = "openai/clip-vit-base-patch32"
+pruning_version = "vit-base32_fisher_07_7.pt"
+
+[models.1]
+model_str = "openai/clip-vit-large-patch14"
+
+INFO:root:loading dataset...
+INFO:root:loading models...
+INFO:root:Building index...
+INFO:root:Building cost:  3.408s
+INFO:root:Querying...
+INFO:root:Query cost: 70.062s, time each query:1.401(9.281)s, max a query:66.368s, min a query:0.066s
+
+
+INFO:root:Build and Query time: 73.491s
+
+
+INFO:root:
+<========CasCLIP Cache=========>
+INFO:root:HuggingFaceCLIP<openai/clip-vit-large-patch14>.ImageEncoder:100%
+INFO:root:
+-------topk score-------
+INFO:root:top1:0.20000
+INFO:root:top5:0.96000
+INFO:root:top10:1.00000
+INFO:root:
+-----time each text-----
+INFO:root:[0]:66.368s
+INFO:root:[1]:0.086s
+INFO:root:[2]:0.076s
+INFO:root:[3]:0.103s
+INFO:root:[4]:0.080s
+INFO:root:[5]:0.077s
+INFO:root:[6]:0.073s
+INFO:root:[7]:0.079s
+INFO:root:[8]:0.072s
+INFO:root:[9]:0.079s
+INFO:root:[10]:0.073s
+INFO:root:[11]:0.073s
+INFO:root:[12]:0.069s
+INFO:root:[13]:0.084s
+INFO:root:[14]:0.074s
+INFO:root:[15]:0.082s
+INFO:root:[16]:0.071s
+INFO:root:[17]:0.075s
+INFO:root:[18]:0.077s
+INFO:root:[19]:0.080s
+INFO:root:[20]:0.069s
+INFO:root:[21]:0.086s
+INFO:root:[22]:0.072s
+INFO:root:[23]:0.077s
+INFO:root:[24]:0.069s
+INFO:root:[25]:0.072s
+INFO:root:[26]:0.068s
+INFO:root:[27]:0.075s
+INFO:root:[28]:0.069s
+INFO:root:[29]:0.074s
+INFO:root:[30]:0.074s
+INFO:root:[31]:0.075s
+INFO:root:[32]:0.069s
+INFO:root:[33]:0.088s
+INFO:root:[34]:0.070s
+INFO:root:[35]:0.078s
+INFO:root:[36]:0.071s
+INFO:root:[37]:0.072s
+INFO:root:[38]:0.066s
+INFO:root:[39]:0.077s
+INFO:root:[40]:0.066s
+INFO:root:[41]:0.074s
+INFO:root:[42]:0.073s
+INFO:root:[43]:0.074s
+INFO:root:[44]:0.069s
+INFO:root:[45]:0.080s
+INFO:root:[46]:0.072s
+INFO:root:[47]:0.076s
+INFO:root:[48]:0.077s
+INFO:root:[49]:0.078s
