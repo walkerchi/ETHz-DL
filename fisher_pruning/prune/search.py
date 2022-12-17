@@ -9,21 +9,26 @@ from efficiency.latency import estimate_latency, fit_latency_fn
 def prune_all_but_one(
     config,
     head_grads,
+    layer,
 ):
     num_hidden_layers = config.num_hidden_layers
     num_attention_heads = config.num_attention_heads
-    intermediate_size = config.intermediate_size
-    hidden_size = config.hidden_size
-    attention_head_size = int(hidden_size / num_attention_heads)
 
     head_importance = compute_fisher_info(head_grads)
     # Globally rank heads and neurons
-    sorted_head_importance, sorted_head_indicies = head_importance.view(-1).sort(descending=True)
+    _, sorted_head_indicies = head_importance.view(-1).sort(descending=True)
     head_mask = torch.ones(num_hidden_layers * num_attention_heads)
     # mask all but one head in one layer
-    x,y = sorted_head_indicies[0]
-    head_mask[x,:] = 0
-    head_mask[sorted_head_indicies[0]] = 1
+
+    biggest_index = -1
+    for i in range(num_hidden_layers):
+        if sorted_head_indicies[i] // num_attention_heads == layer:
+            biggest_index = i
+            break
+
+    head_mask[num_attention_heads * layer : num_attention_heads * (layer + 1)] = 0
+    head_mask[biggest_index] = 1
+    head_mask = head_mask.view(num_hidden_layers, num_attention_heads)
     return head_mask
 
 @torch.no_grad()

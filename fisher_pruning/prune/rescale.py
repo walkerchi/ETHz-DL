@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import torch
 
-from utils.linalg import lsmr_cupy_solver, lsmr_cupy_solver_no_layer_norm
+from utils.linalg import lsmr_cupy_solver
 from utils.arch import (
     get_layers,
     get_mha_proj,
