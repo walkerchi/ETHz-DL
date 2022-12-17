@@ -9,7 +9,7 @@ from efficiency.latency import estimate_latency, fit_latency_fn
 def prune_all_but_one(
     config,
     head_grads,
-    layer,
+    head_mask,
 ):
     num_hidden_layers = config.num_hidden_layers
     num_attention_heads = config.num_attention_heads
@@ -17,15 +17,32 @@ def prune_all_but_one(
     head_importance = compute_fisher_info(head_grads)
     # Globally rank heads and neurons
     _, sorted_head_indicies = head_importance.view(-1).sort(descending=True)
-    head_mask = torch.ones(num_hidden_layers * num_attention_heads)
-    # mask all but one head in one layer
 
-    biggest_index = -1
+    pruned_layers = []
     for i in range(num_hidden_layers):
-        if sorted_head_indicies[i] // num_attention_heads == layer:
-            biggest_index = i
-            break
+        row_min = torch.min(head_mask[i])
+        print(i, row_min)
+        if row_min == 0:
+            pruned_layers.append(torch.tensor(i))
+    print("the following layers have been pruned already:")
+    print(pruned_layers)
+    print("---------------------------------------------")
 
+    done = False
+    i = 0
+    while not done:
+        fail = False
+        for l in pruned_layers:
+            if torch.equal(sorted_head_indicies[i] // num_attention_heads, l):
+                fail = True
+        if fail:
+            i += 1
+        else:
+            done = True
+    biggest_index = sorted_head_indicies[i]
+    layer = biggest_index // num_attention_heads
+    
+    head_mask = head_mask.view(-1)
     head_mask[num_attention_heads * layer : num_attention_heads * (layer + 1)] = 0
     head_mask[biggest_index] = 1
     head_mask = head_mask.view(num_hidden_layers, num_attention_heads)

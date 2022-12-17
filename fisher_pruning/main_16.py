@@ -109,29 +109,31 @@ def main():
     for param in model.parameters():
         param.requires_grad_(False)
 
-    full_head_mask = torch.ones(config.num_hidden_layers, config.num_attention_heads)#cuda()
-    full_neuron_mask = torch.ones(config.num_hidden_layers, config.intermediate_size)#cuda()
-
-    start = time.time()
-    # Search the optimal mask
-    head_grads, _ = collect_mask_grads(
-        model,
-        full_head_mask,
-        full_neuron_mask,
-        sample_dataloader,
-    )
-    end = time.time()
-    logger.info(f"{args.task_name} Pruning time (s): {end - start}")
+    head_mask = torch.ones(config.num_hidden_layers, config.num_attention_heads)#cuda()
+    neuron_mask = torch.ones(config.num_hidden_layers, config.intermediate_size)#cuda()
 
     for i in range(config.num_hidden_layers):
+
+        start = time.time()
+        # Search the optimal mask
+        head_grads, _ = collect_mask_grads(
+            model,
+            head_mask,
+            neuron_mask,
+            sample_dataloader,
+        )
 
         head_mask = prune_all_but_one(
             config,
             head_grads,
-            i,
+            head_mask,
         )
 
-        neuron_mask = torch.ones((config.num_hidden_layers, config.intermediate_size))
+        print(head_mask)
+
+        end = time.time()
+        logger.info(f"{args.task_name} Pruning time (s): {end - start}")
+
         pruned_mac, orig_mac = compute_mask_mac(head_mask, neuron_mask, seq_len, config.hidden_size)
         logger.info(f"Pruned Model MAC: {pruned_mac / orig_mac * 100.0:.2f} %")
 
