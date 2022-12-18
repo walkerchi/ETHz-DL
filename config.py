@@ -57,7 +57,13 @@ class ModelsConfig:
         self.device = device
         self.cache_type = cache_type
         self.name   = config['name']
-        self.kwargs = [config[str(i)]['kwargs'] for i in range(len(self.name))]
+        self.kwargs = []
+        for i in range(len(self.name)):
+            if str(i) in config and "kwargs" in config[str(i)]:
+                self.kwargs.append(config[str(i)]["kwargs"])
+            else:
+                self.kwargs.append({})
+        # self.kwargs = [config[str(i)]['kwargs'] for i in range(len(self.name))]
         assert isinstance(self.device, str)
         for i in range(len(self)):
             assert isinstance(self.name[i], str)
@@ -77,6 +83,11 @@ class ModelsConfig:
         """
         logging.info("loading models...")
         return models.CasCLIP([getattr(models,self.name[i])(**self.kwargs[i]).to(self.device) for i in range(len(self))], cache_type=self.cache_type)
+    def __getitem__(self, index):
+        return ModelsConfig({
+            "name":[self.name[index]],
+            "0":{"kwargs":self.kwargs[index]}
+        }, self.device, self.cache_type)
 
 class Config:
     """Configuration for the experiment
@@ -101,27 +112,37 @@ class Config:
                     The filename of the configure file.
                     It's used for logging, 
                     the log will be writen to a timed-named file under the folder f`.log\{filename}` 
-        query_rate: Optional[float], default None
-                    query rate for the experiment,
-                    if 0.1, the experiment will carry out on 10% of the texts
+        query_rate: float, default 1.0
+                    query rate for the experiment, it will be different in differet experiments
+                    in `topk` experiment, if 0.1, the experiment will carry out on 10% of the texts
+                    in `speedup` experiment, if 0.1, it will calcuate the speed up for 10% images encoded by the large model
         cache_type: str, default `sparse`
                     the cache type in CasCLIP, choose from [`sparse`, `dense`]
+        experiment: str, default `topk`
+                    the experiment to run, choose from [`topk`, `speedup`]
+                    if `topk`, it will run calcuate the `topk` result of the model on the given dataset 
+                    if `speedup`, it will compare the time cost for the large model(last layer) and the small model(first layer) to compute the speed up
+                        the speedup is given by $speedup = large\_time / (small\_time + query\_ratio * large\_time)$
     """
     def __init__(self,config):
         
-        self.topm    = config['topm']              if 'topm'          in config else None
-        self.topk    = config['topk']           
-        self.seed    = config['seed']              if 'seed'          in config else 123456789
+        self.topm         = config['topm']         if 'topm'          in config else None
+        self.topk         = config['topk']         if 'topk'          in config else [1]  
+        self.seed         = config['seed']         if 'seed'          in config else 123456789
         self.logging_level=config['logging_level'] if 'logging_level' in config else 'INFO'
-        self.device  = config['device']            if 'device'        in config else DEFAULT_DEVICE
-        self.batch_size = config['batch_size']     if 'batch_size'    in config else None
-        self.filename= config['filename']
-        self.query_rate   =config['query_rate']    if 'query_rate'    in config else None
+        self.device       = config['device']       if 'device'        in config else DEFAULT_DEVICE
+        self.batch_size   = config['batch_size']   if 'batch_size'    in config else None
+        self.filename     = config['filename']
+        self.query_rate   =config['query_rate']    if 'query_rate'    in config else 1.0  # different meaning in two experiments
         self.cache_type   =config['cache_type']    if 'cache_type'    in config else "sparse"
+        self.experiment   =config['experiment']    if 'experiment'    in config else "topk"
 
         self.dataset = DatasetConfig(config['dataset'])
         self.models  = ModelsConfig(config['models'], self.device, self.cache_type)
         
+        assert self.device in ["cpu", "cuda"]
+        assert self.cache_type in ["sparse", "dense"]
+        assert self.experiment in ["topk", "speedup"]
         assert self.topm is None or isinstance(self.topm, list), f"`topm` in configure file should be list of int or `None`, but got {self.topm}"
         assert isinstance(self.topk, list), f"`topk` in configure file should be list of int, but got {self.topk}"
         assert isinstance(self.logging_level, str), f"`logging_level` in configure file should be str, but got {self.logging_level}"

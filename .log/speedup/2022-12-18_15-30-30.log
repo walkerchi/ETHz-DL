@@ -1,0 +1,39 @@
+INFO:root:
+topm = [ 35,]
+topk = [ 1, 5, 10,]
+seed = 123456789
+logging_level = "INFO"
+device = "cpu"
+batch_size = 8
+query_rate = 0.1
+cache_type = "sparse"
+
+[dataset]
+name = "MSCOCO"
+
+[models]
+name = [ "OpenAIFLIP", "OpenAICLIP",]
+
+[dataset.kwargs]
+n_samples = 1000
+layout = "image-caption[0]"
+
+[models.0]
+p = 0.5
+model_str = "ViT-B/32"
+
+[models.1]
+model_str = "ViT-B/32"
+
+INFO:root:loading dataset...
+INFO:root:loading models...
+INFO:root:loading models...
+INFO:root:Build Base Model...
+INFO:root:Base Model Building cost: 75.720s average:  0.076s
+
+
+INFO:root:Build Model...
+INFO:root:Model Building cost: 41.945s average:  0.042s
+
+
+INFO:root:speed up:1.529

@@ -1,0 +1,23 @@
+#[OpenAIFLIP, OpenAICLIP]
+dataset.name    = 'MSCOCO'
+models.name     = ['OpenAIFLIP', 'OpenAICLIP']
+topk            = [1, 5, 10]
+topm            = [35]
+seed            = 123456789
+logging_level   = 'INFO'
+device          = 'cpu'
+query_rate      = 0.1
+batch_size      = 8
+cache_type      = "sparse"
+experiment      = "speedup"
+
+[dataset.kwargs]
+n_samples       = 1000
+layout    = 'image-caption[0]'
+
+[models.0.kwargs]
+p         = 0.5
+model_str = "ViT-B/32"
+
+[models.1.kwargs]
+model_str = "ViT-B/32"
