@@ -8,7 +8,7 @@ logging_level   = 'INFO'
 device          = 'cpu'
 
 [dataset.kwargs]
-n_samples = 50
+n_samples = 1000
 layout    = 'caption'
 
 [models.1.kwargs]
@@ -16,4 +16,4 @@ model_str = 'openai/clip-vit-large-patch14'
 
 [models.0.kwargs]
 model_str = 'openai/clip-vit-base-patch32'
-pruning_version = 'vit-base32_fisher_07_7.pt'
+pruning_version = 'vitB32_pruned_0.75_751.pt'
