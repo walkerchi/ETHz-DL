@@ -267,7 +267,7 @@ class OpenAIFLIP(nn.Module):
                 if emb_batch.device != torch.device(device):
                     emb_batch = emb_batch.to(device)
                 emb_texts.append(emb_batch)
-            emb_texts = torch.cat(emb_images, 0)
+            emb_texts = torch.cat(emb_texts, 0)
         if is_single:
             return emb_texts[0] 
         else:

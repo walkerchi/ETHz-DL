@@ -123,6 +123,8 @@ class Config:
                     if `topk`, it will run calcuate the `topk` result of the model on the given dataset 
                     if `speedup`, it will compare the time cost for the large model(last layer) and the small model(first layer) to compute the speed up
                         the speedup is given by $speedup = large\_time / (small\_time + query\_ratio * large\_time)$
+        times:      int, default 3
+                    the measure time for `speedup` experiment
     """
     def __init__(self,config):
         
@@ -136,6 +138,7 @@ class Config:
         self.query_rate   =config['query_rate']    if 'query_rate'    in config else 1.0  # different meaning in two experiments
         self.cache_type   =config['cache_type']    if 'cache_type'    in config else "sparse"
         self.experiment   =config['experiment']    if 'experiment'    in config else "topk"
+        self.times        =config['times']         if 'times'         in config else 3
 
         self.dataset = DatasetConfig(config['dataset'])
         self.models  = ModelsConfig(config['models'], self.device, self.cache_type)
