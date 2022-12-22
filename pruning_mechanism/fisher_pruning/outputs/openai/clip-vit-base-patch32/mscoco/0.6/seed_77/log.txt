@@ -1,0 +1,8 @@
+12/16/2022 16:40:40 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.6, gpu=0, model_name='openai/clip-vit-base-patch32', num_samples=2048, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.6/seed_77', seed=77, task_name='mscoco')
+12/16/2022 16:40:40 - INFO - __main__ - Seed number: 77
+12/16/2022 16:51:09 - INFO - __main__ - Pruned Model MAC: 60.00 %
+12/17/2022 11:31:27 - INFO - __main__ - mscoco Pruning time (s): 67830.81651377678
+12/17/2022 11:32:20 - INFO - __main__ - Losses for head mask only: [tensor(0.2565), tensor(0.4914), tensor(0.4872), tensor(2.6487), tensor(0.1136), tensor(0.3796), tensor(0.6119), tensor(0.6414)]
+12/17/2022 11:32:20 - INFO - __main__ - Losses for neuron mask only: [tensor(0.0729), tensor(0.0045), tensor(0.9641), tensor(0.2412), tensor(1.0640), tensor(0.5398), tensor(0.5416), tensor(1.3258)]
+12/17/2022 11:32:20 - INFO - __main__ - Losses for both masks: [tensor(3.2209), tensor(0.6721), tensor(1.2481), tensor(2.4907), tensor(1.2190), tensor(0.9345), tensor(1.1696), tensor(3.0253)]
+12/17/2022 11:32:20 - INFO - __main__ - Losses for random binary masks with same number of zeros: [tensor(6.0715), tensor(3.6435), tensor(6.9440), tensor(3.3092), tensor(3.7072), tensor(4.4292), tensor(2.8419), tensor(6.2416)]

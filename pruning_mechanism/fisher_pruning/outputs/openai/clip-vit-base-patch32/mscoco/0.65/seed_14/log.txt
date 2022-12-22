@@ -1,0 +1,12 @@
+12/17/2022 20:39:44 - INFO - __main__ - Namespace(model_name='openai/clip-vit-base-patch32', task_name='mscoco', ckpt_dir='ckpt', output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.65/seed_14', gpu=1, constraint=0.65, num_samples=2048, seed=14)
+12/17/2022 20:39:44 - INFO - __main__ - Seed number: 14
+12/17/2022 20:56:18 - INFO - __main__ - Pruned Model MAC: 65.00 %
+12/17/2022 21:25:39 - INFO - __main__ - mscoco Pruning time (s): 2722.0893766880035
+12/18/2022 11:51:57 - INFO - __main__ - Namespace(model_name='openai/clip-vit-base-patch32', task_name='mscoco', ckpt_dir='ckpt', output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.65/seed_14', gpu=1, constraint=0.65, num_samples=2048, seed=14)
+12/18/2022 11:51:57 - INFO - __main__ - Seed number: 14
+12/18/2022 12:08:33 - INFO - __main__ - Pruned Model MAC: 65.00 %
+12/18/2022 12:38:39 - INFO - __main__ - mscoco Pruning time (s): 2760.804800748825
+12/18/2022 12:39:57 - INFO - __main__ - Losses for head mask only: [tensor(8.5681e-07, device='cuda:0'), tensor(0.0007, device='cuda:0'), tensor(3.1366e-06, device='cuda:0'), tensor(0.6297, device='cuda:0'), tensor(2.8471e-05, device='cuda:0'), tensor(0.0580, device='cuda:0'), tensor(7.9674e-05, device='cuda:0'), tensor(0.0254, device='cuda:0')]
+12/18/2022 12:39:57 - INFO - __main__ - Losses for neuron mask only: [tensor(0.0005, device='cuda:0'), tensor(0.0753, device='cuda:0'), tensor(0.1431, device='cuda:0'), tensor(0.2623, device='cuda:0'), tensor(0.1749, device='cuda:0'), tensor(0.0212, device='cuda:0'), tensor(0.2117, device='cuda:0'), tensor(0.0759, device='cuda:0')]
+12/18/2022 12:39:57 - INFO - __main__ - Losses for both masks: [tensor(0.2563, device='cuda:0'), tensor(0.4284, device='cuda:0'), tensor(0.1362, device='cuda:0'), tensor(0.8751, device='cuda:0'), tensor(0.1541, device='cuda:0'), tensor(0.8832, device='cuda:0'), tensor(0.4569, device='cuda:0'), tensor(0.5652, device='cuda:0')]
+12/18/2022 12:39:57 - INFO - __main__ - Losses for random binary masks with same number of zeros: [tensor(2.3938, device='cuda:0'), tensor(3.1246, device='cuda:0'), tensor(3.2447, device='cuda:0'), tensor(5.2044, device='cuda:0'), tensor(7.2538, device='cuda:0'), tensor(3.1872, device='cuda:0'), tensor(5.1027, device='cuda:0'), tensor(3.0824, device='cuda:0')]
