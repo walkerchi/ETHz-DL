@@ -1,0 +1,10 @@
+12/20/2022 13:25:47 - INFO - __main__ - Namespace(model_name='openai/clip-vit-base-patch32', task_name='mscoco', ckpt_dir='ckpt', output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.7/seed_701', gpu=1, constraint=0.7, num_samples=4096, seed=701)
+12/20/2022 13:25:47 - INFO - __main__ - Seed number: 701
+12/20/2022 13:33:48 - INFO - __main__ - Namespace(model_name='openai/clip-vit-base-patch32', task_name='mscoco', ckpt_dir='ckpt', output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.7/seed_701', gpu=1, constraint=0.7, num_samples=4096, seed=701)
+12/20/2022 13:33:48 - INFO - __main__ - Seed number: 701
+12/20/2022 13:52:32 - INFO - __main__ - Pruned Model MAC: 70.00 %
+12/20/2022 14:29:53 - INFO - __main__ - mscoco Pruning time (s): 3348.825576543808
+12/20/2022 14:31:35 - INFO - __main__ - Losses for head mask only: [tensor(0., device='cuda:0'), tensor(0., device='cuda:0'), tensor(0., device='cuda:0'), tensor(0., device='cuda:0'), tensor(0., device='cuda:0'), tensor(3.1292e-07, device='cuda:0'), tensor(7.4506e-08, device='cuda:0'), tensor(0., device='cuda:0')]
+12/20/2022 14:31:35 - INFO - __main__ - Losses for neuron mask only: [tensor(0.0126, device='cuda:0'), tensor(7.6164e-05, device='cuda:0'), tensor(0.3968, device='cuda:0'), tensor(0.0058, device='cuda:0'), tensor(6.7127e-06, device='cuda:0'), tensor(0.2787, device='cuda:0'), tensor(0.0214, device='cuda:0'), tensor(0.0781, device='cuda:0')]
+12/20/2022 14:31:35 - INFO - __main__ - Losses for both masks: [tensor(0.0182, device='cuda:0'), tensor(0.0016, device='cuda:0'), tensor(0.6163, device='cuda:0'), tensor(0.1274, device='cuda:0'), tensor(0.1881, device='cuda:0'), tensor(0.1814, device='cuda:0'), tensor(0.0765, device='cuda:0'), tensor(0.0881, device='cuda:0')]
+12/20/2022 14:31:35 - INFO - __main__ - Losses for random binary masks with same number of zeros: [tensor(4.0642, device='cuda:0'), tensor(6.3168, device='cuda:0'), tensor(5.6424, device='cuda:0'), tensor(9.4861, device='cuda:0'), tensor(7.1289, device='cuda:0'), tensor(5.4773, device='cuda:0'), tensor(5.5533, device='cuda:0'), tensor(6.3906, device='cuda:0')]
