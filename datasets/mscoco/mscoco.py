@@ -79,7 +79,13 @@ class MSCOCO:
         return len(self._captions)
     @property
     def images(self):
-        return [Image.open(image) for image in self._images]
+        imgs = []
+        for image in self._images:
+            img = Image.open(image)
+            img.load()
+            imgs.append(img)
+        return imgs
+
     @property
     def captions(self):
         return self._captions
