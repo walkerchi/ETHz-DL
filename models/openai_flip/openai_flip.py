@@ -1,4 +1,5 @@
 import os
+import time
 import torch 
 import torch.nn as nn 
 import torch.nn.functional as F
@@ -149,7 +150,7 @@ class OpenAIFLIP(nn.Module):
     def preprocess_texts(self, texts:List[str]):
         return self.text_encoder.preprocess(texts)
 
-    def encode_images(self, images:Union[List[PILImage], PILImage], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False)->torch.Tensor:
+    def encode_images(self, images:Union[List[PILImage], PILImage], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False, return_timing=False)->torch.Tensor:
         """
             Parameters
             ----------
@@ -179,6 +180,7 @@ class OpenAIFLIP(nn.Module):
             is_single = True
         emb_images = []
         if batch_size is None:
+            assert return_timing == False, "batch size needs to be specified for timing"
             if verbose:
                 images = tqdm(images, total=len(images), desc="Image Encoding")
             for image in images:
@@ -196,6 +198,7 @@ class OpenAIFLIP(nn.Module):
             images = DataLoader(self.preprocess_images(images), batch_size=batch_size)
             if verbose:
                 images = tqdm(images, total=len(images), desc="Image Encoding")
+            start_time = time.process_time()
             for batch in images:
                 if self.no_grad:
                     with torch.no_grad():
@@ -205,6 +208,9 @@ class OpenAIFLIP(nn.Module):
                 if emb_batch.device != torch.device(device):
                     emb_batch = emb_batch.to(device)
                 emb_images.append(emb_batch)
+            end_time = time.process_time()
+            if return_timing:
+                return end_time - start_time
             emb_images = torch.cat(emb_images, 0)
        
         if is_single:

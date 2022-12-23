@@ -5,7 +5,7 @@ topk            = [1, 5, 10]
 seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cpu'
-query_rate      = 0.1
+f      = 0.1
 
 [dataset.kwargs]
 layout    = 'image-caption[0]'

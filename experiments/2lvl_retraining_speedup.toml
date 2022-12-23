@@ -1,0 +1,23 @@
+dataset.name    = 'MSCOCO'
+models.name     = ['OpenAICLIP', 'OpenAICLIP']
+base_model.name = ['OpenAICLIP']
+seed            = 123456789
+logging_level   = 'INFO'
+device          = 'cpu'
+batch_size      = 32
+experiment      = "speedup"
+n_reps          = 3
+f               = 0.1
+
+[dataset.kwargs]
+n_samples       = 1024  # only need sufficiently many samples to get accurate timing
+layout    = 'caption'
+
+[models.0.kwargs]
+model_str = "ViT-B/16"
+
+[models.1.kwargs]
+model_str = "ViT-B/32"
+
+[base_model.0.kwargs]
+model_str = "ViT-B/32"

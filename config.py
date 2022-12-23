@@ -112,10 +112,9 @@ class Config:
                     The filename of the configure file.
                     It's used for logging, 
                     the log will be writen to a timed-named file under the folder f`.log\{filename}` 
-        query_rate: float, default 1.0
+        f: float, default 1.0
                     query rate for the experiment, it will be different in differet experiments
-                    in `topk` experiment, if 0.1, the experiment will carry out on 10% of the texts
-                    in `speedup` experiment, if 0.1, it will calcuate the speed up for 10% images encoded by the large model
+                    in `speedup` experiment, it will calcuate the speed up assuming that only a fraction of f images will ever be returned by a search engine.
         cache_type: str, default `sparse`
                     the cache type in CasCLIP, choose from [`sparse`, `dense`]
         experiment: str, default `topk`
@@ -123,8 +122,10 @@ class Config:
                     if `topk`, it will run calcuate the `topk` result of the model on the given dataset 
                     if `speedup`, it will compare the time cost for the large model(last layer) and the small model(first layer) to compute the speed up
                         the speedup is given by $speedup = large\_time / (small\_time + query\_ratio * large\_time)$
-        times:      int, default 3
-                    the measure time for `speedup` experiment
+        n_reps:      int, default 3
+                    how often to repeat timing measurements for a `speedup` experiment
+        base_model: str, required if experiment == `speedup`
+                    model to use as a baseline comparison for `speedup` experiments
     """
     def __init__(self,config):
         
@@ -135,10 +136,12 @@ class Config:
         self.device       = config['device']       if 'device'        in config else DEFAULT_DEVICE
         self.batch_size   = config['batch_size']   if 'batch_size'    in config else None
         self.filename     = config['filename']
-        self.query_rate   =config['query_rate']    if 'query_rate'    in config else 1.0  # different meaning in two experiments
+        self.f   =config['f']    if 'f'    in config else 1.0  # different meaning in two experiments
         self.cache_type   =config['cache_type']    if 'cache_type'    in config else "sparse"
         self.experiment   =config['experiment']    if 'experiment'    in config else "topk"
-        self.times        =config['times']         if 'times'         in config else 3
+        if self.experiment == "speedup":
+            self.base_model = ModelsConfig(config['base_model'], self.device, self.cache_type)
+        self.n_reps        =config['n_reps']         if 'n_reps'         in config else 3
 
         self.dataset = DatasetConfig(config['dataset'])
         self.models  = ModelsConfig(config['models'], self.device, self.cache_type)
@@ -158,13 +161,14 @@ class Config:
         return {
             "dataset":  self.dataset.to_dict(),
             "models":   self.models.to_dict(),
+            "base_model":   self.base_model.to_dict(),
             "topm":     self.topm,
             "topk":     self.topk,
             "seed":     self.seed,
             "logging_level":self.logging_level,
             "device":   self.device,
             "batch_size":self.batch_size,
-            "query_rate":self.query_rate,
+            "f":self.f,
             "cache_type":self.cache_type
         }
 
