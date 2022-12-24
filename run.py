@@ -44,9 +44,9 @@ Evaluate an experiment
     if config.experiment == "topk":
         model       = config.models()
         logging.info(f"Building index...")
-        build_start       = time()
+        build_start       = time.process_time()
         model.build(dataset.images, batch_size=config.batch_size, verbose=True)
-        build_end         = time()
+        build_end         = time.process_time()
         logging.info(f"Building cost:{build_end-build_start:7.3f}s")
 
         topk_score  = np.array([0.0 for i in range(len(config.topk))])
@@ -60,16 +60,16 @@ Evaluate an experiment
         logging.info(f"Querying...")
         for label, text in tqdm(zip(labels,inputs),total=len(index), desc="Query Caption"):
 
-            start   = time()
+            start   = time.process_time()
             indices = model.query(text, topk=max(config.topk), topm=config.topm, batch_size=config.batch_size)
-            end     = time()
+            end     = time.process_time()
             times.append(end-start)
 
             for j,k in enumerate(config.topk):
                 if label in indices[:k]:
                     topk_score[j] += 1.0
         times = np.array(times)
-        query_end = time()
+        query_end = time.process_time()
         topk_score /= len(index)
         logging.info(f"Query cost:{sum(times):7.3f}s, time each query:{np.mean(times):5.3f}({np.std(times):5.3f})s, max a query:{np.max(times):5.3f}s, min a query:{np.min(times):5.3f}s\n\n")
         logging.info(f"Build and Query time:{query_end - build_start:7.3f}s\n\n")

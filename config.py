@@ -136,11 +136,13 @@ class Config:
         self.device       = config['device']       if 'device'        in config else DEFAULT_DEVICE
         self.batch_size   = config['batch_size']   if 'batch_size'    in config else None
         self.filename     = config['filename']
-        self.f   =config['f']    if 'f'    in config else 1.0  # different meaning in two experiments
+        self.f            =config['f']    if 'f'    in config else 1.0  # different meaning in two experiments
         self.cache_type   =config['cache_type']    if 'cache_type'    in config else "sparse"
         self.experiment   =config['experiment']    if 'experiment'    in config else "topk"
         if self.experiment == "speedup":
             self.base_model = ModelsConfig(config['base_model'], self.device, self.cache_type)
+        else:
+            self.base_model = None
         self.n_reps        =config['n_reps']         if 'n_reps'         in config else 3
 
         self.dataset = DatasetConfig(config['dataset'])
@@ -161,7 +163,7 @@ class Config:
         return {
             "dataset":  self.dataset.to_dict(),
             "models":   self.models.to_dict(),
-            "base_model":   self.base_model.to_dict(),
+            "base_model":   self.base_model.to_dict() if self.base_model is not None else "",
             "topm":     self.topm,
             "topk":     self.topk,
             "seed":     self.seed,

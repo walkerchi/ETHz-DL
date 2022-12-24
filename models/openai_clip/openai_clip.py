@@ -76,7 +76,12 @@ class OpenAICLIP(nn.Module):
         with torch.no_grad():
             return tokenize(["a photo of " + text for text in texts])
 
-    def encode_images(self, images:Union[List[PILImage], PILImage], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False, return_timing=False)->torch.Tensor:
+    def encode_image(self, image):
+        return self.model.encode_image(image)
+    def encode_text(self, text):
+        return self.model.encode_text(text)
+
+    def encode_images(self, images:Union[List[PILImage], PILImage], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False, return_timing:bool=False)->torch.Tensor:
         """
             Parameters
             ----------
@@ -94,9 +99,13 @@ class OpenAICLIP(nn.Module):
                 verbose:    bool
                             if verbose, the tqdm progress bar will be showed 
                             else, the encoding process will keep silent
-            
+                return_timing:bool, default `False`,
+                            if `True`, the return will be only a float time
+
             Returns
             -------
+                if return_timing is `True`, will return a float number which is the process time
+                else return the emb_images which is 
                 emb_images: torch.FloatTensor[n_image, n_emb] or [e_emb]
                             the embedding of the encoded images
                             the device should be in cpu, no matter what the device for the encoder
@@ -106,40 +115,36 @@ class OpenAICLIP(nn.Module):
         if isinstance(images, PILImage):
             images = [images]
             is_single = True
-        emb_images = []
-        if batch_size is None:
-            assert return_timing == False, "batch size needs to be specified for timing"
-            if verbose:
-                images = tqdm(images, total=len(images), desc="Image Encoding")
-            for image in images:
-                image      = self.preprocess_images([image])
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch  = self.model.encode_image(image)
-                else:
-                    emb_batch  = self.model.encode_image(image)
-                if emb_batch.device != torch.device(device):
-                    emb_batch  = emb_batch.to(device)
-                emb_images.append(emb_batch)
-            emb_images = torch.cat(emb_images, 0)
-        else:
+        
+        images = self.preprocess_images(images)
+
+        if batch_size is not None:
             images = DataLoader(self.preprocess_images(images), batch_size=batch_size)
-            if verbose:
-                images = tqdm(images, total=len(images), desc="Image Encoding")
-            start_time = time.process_time()
-            for batch in images:
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch  = self.model.encode_image(batch)
-                else:
-                    emb_batch  = self.model.encode_image(batch)
-                if emb_batch.device != torch.device(device):
-                    emb_batch = emb_batch.to(device)
-                emb_images.append(emb_batch)
-            end_time = time.process_time()
-            if return_timing:
-                return end_time - start_time
-            emb_images = torch.cat(emb_images, 0)
+
+        if verbose:
+            images = tqdm(images, total=len(images), desc="Image Encoding")
+
+        emb_images = []
+
+        start_time = time.process_time()
+
+        for image in images:
+            if self.no_grad:
+                with torch.no_grad():
+                    emb_batch  = self.encode_image(image)
+            else:
+                emb_batch  = self.encode_image(image)
+            if emb_batch.device != torch.device(device):
+                emb_batch  = emb_batch.to(device)
+            emb_images.append(emb_batch)
+
+        end_time = time.process_time()
+
+        if return_timing:
+            return end_time - start_time
+
+        emb_images = torch.cat(emb_images, 0)
+
         if is_single:
             return emb_images[0] 
         else:
@@ -163,8 +168,11 @@ class OpenAICLIP(nn.Module):
                 verbose:    bool
                             if verbose, the tqdm progress bar will be showed 
                             else, the encoding process will keep silent
+    
             Returns
             -------
+                if return_timing is `True`, will return a float number which is the process time
+                else return the emb_images which is 
                 emb_texts:  torch.FloatTensor[n_text, n_emb] or [e_emb]
                             the embedding of the encoded texts
         """
@@ -172,35 +180,29 @@ class OpenAICLIP(nn.Module):
         if isinstance(texts, str):
             texts = [texts]
             is_single = True
-        emb_texts = []
-        if batch_size is None:
-            if verbose:
-                texts = tqdm(texts, total=len(texts), desc="Text Encoding")
-            for text in texts:
-                text       = self.preprocess_texts([text])
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch  = self.model.encode_text(text)
-                else:
-                    emb_batch  = self.model.encode_text(text)
-                if emb_batch.device != torch.device(device):
-                    emb_batch = emb_batch.to(device)
-                emb_texts.append(emb_batch)
-            emb_texts = torch.cat(emb_texts, 0)
-        else:
+        
+        texts = self.preprocess_texts([texts])
+        
+        if batch_size is not None:
             texts = TextLoader(texts, batch_size)
-            if verbose:
-                texts = tqdm(texts, total=len(texts), desc="Text Encoding")
-            for batch in texts:
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch  = self.model.encode_text(batch)
-                else:
-                    emb_batch  = self.model.encode_text(batch)
-                if emb_batch.device != torch.device(device):
-                    emb_batch = emb_batch.to(device)
-                emb_texts.append(emb_batch)
-            emb_texts = torch.cat(emb_texts, 0)
+       
+        if verbose:
+            texts = tqdm(texts, total=len(texts), desc="Text Encoding")
+
+        emb_texts = []
+
+        for text in texts:
+            if self.no_grad:
+                with torch.no_grad():
+                    emb_batch  = self.encode_text(text)
+            else:
+                emb_batch  = self.encode_text(text)
+            if emb_batch.device != torch.device(device):
+                emb_batch = emb_batch.to(device)
+            emb_texts.append(emb_batch)
+            
+        emb_texts = torch.cat(emb_texts, 0)
+
         if is_single:
             return emb_texts[0] 
         else:

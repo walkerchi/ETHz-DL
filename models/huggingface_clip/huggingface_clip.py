@@ -1,4 +1,5 @@
 import os
+import time
 import numpy as np
 import torch
 import torch.nn as nn
@@ -11,23 +12,6 @@ from PIL.ImageFile import ImageFile as PILImage
 
 CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),".cache")
 
-
-class ImageLoader(DataLoader):
-    def __init__(self, data:dict, batch_size:int, **kwargs):
-
-        super().__init__(
-            dataset     = np.arange(len(next(iter(data.values())))),
-            batch_size  = batch_size,
-            collate_fn  = self.collate_fn,
-            **kwargs
-        )
-        self.data = data
-
-    def collate_fn(self, index:List[int]):
-        batch = {}
-        for k,v in self.data.items():
-            batch[k] = v[index]
-        return batch
 
 class TextLoader(DataLoader):
     def __init__(self, model_str:str, texts:List[str], batch_size:int, **kwargs):
@@ -48,7 +32,7 @@ class HuggingFaceCLIP(nn.Module):
             os.mkdir(cache_dir)
         self.tokenizer       = CLIPTokenizer.from_pretrained(model_str, cache_dir=cache_dir)
         self.processor       = CLIPProcessor.from_pretrained(model_str, cache_dir=cache_dir)
-        self.model           = CLIPModel.from_pretrained(model_str)#, cache_dir=cache_dir)
+        self.model           = CLIPModel.from_pretrained(model_str, cache_dir=cache_dir)
         self.model_str       = model_str
         self.no_grad         = True
     @property
@@ -62,13 +46,19 @@ class HuggingFaceCLIP(nn.Module):
         return self
 
     def preprocess_images(self, images:List[PILImage]):
-        return self.processor(images=images, return_tensors="pt")
+        return self.processor(images=images, return_tensors="pt")["pixel_values"]
 
     def preprocess_texts(self, texts:List[str]):
         texts = ["a photo of" + text for text in texts]
         return self.tokenizer(texts, padding=True, return_tensors="pt")
 
-    def encode_images(self, images:Union[List[PILImage], PILImage], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False)->torch.Tensor:
+    def encode_image(self, image):
+        return self.model.get_image_features(pixel_values=image)
+
+    def encode_text(self, input_ids, attention_mask):
+        return self.model.get_text_features(input_ids=input_ids, attention_mask=attention_mask)
+
+    def encode_images(self, images:Union[List[PILImage], PILImage], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False, return_timing:bool=False)->torch.Tensor:
         """
             Parameters
             ----------
@@ -86,9 +76,13 @@ class HuggingFaceCLIP(nn.Module):
                 verbose:    bool
                             if verbose, the tqdm progress bar will be showed
                             else, the encoding process will keep silent
+                return_timing:bool, default `False`
+                            if `True` return the cpu time rather than the result
 
             Returns
             -------
+                if return_timing is `True`, will return a float number which is the process time
+                else return the emb_images which is 
                 emb_images: torch.FloatTensor[n_image, n_emb] or [e_emb]
                             the embedding of the encoded images
                             the device should be in cpu, no matter what the device for the encoder
@@ -97,41 +91,41 @@ class HuggingFaceCLIP(nn.Module):
         if isinstance(images, PILImage):
             images = [images]
             is_single = True
+
+        images = self.preprocess_images(images)
+        if batch_size is not None:
+            images = DataLoader(images, batch_size=batch_size)
+
+        if verbose:
+            images = tqdm(images, total=len(images), desc="Image Encoding")
+
         emb_images = []
-        if batch_size is None:
-            if verbose:
-                images = tqdm(images, total=len(images), desc="Image Encoding")
-            for image in images:
-                image      = self.preprocess_images([image])
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch  = self.model.get_image_features(**image)
-                else:
-                    emb_batch = self.model.get_image_features(**image)
-                if emb_batch.device != torch.device(device):
-                    emb_batch  = emb_batch.to(device)
-                emb_images.append(emb_batch)
-            emb_images = torch.cat(emb_images, 0)
-        else:
-            images = ImageLoader(self.preprocess_images(images), batch_size)
-            if verbose:
-                images = tqdm(images, total=len(images), desc="Image Encoding")
-            for batch in images:
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch  = self.model.get_image_features(**batch)
-                else:
-                    emb_batch = self.model.get_image_features(**batch)
-                if emb_batch.device != torch.device(device):
-                    emb_batch = emb_batch.to(device)
-                emb_images.append(emb_batch)
-            emb_images = torch.cat(emb_images, 0)
+
+        start_time = time.process_time()
+
+        for image in images:
+            if self.no_grad:
+                with torch.no_grad():
+                    emb_batch  = self.encode_image(image)
+            else:
+                emb_batch = self.encode_image(image)
+            if emb_batch.device != torch.device(device):
+                emb_batch  = emb_batch.to(device)
+            emb_images.append(emb_batch)
+
+        end_time  = time.process_time()
+
+        if return_timing:
+            return end_time - start_time
+
+        emb_images = torch.cat(emb_images, 0)
+
         if is_single:
             return emb_images[0]
         else:
             return emb_images
 
-    def encode_texts(self, texts:Union[List[str],str], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False)->torch.Tensor:
+    def encode_texts(self, texts:Union[List[str],str], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False, return_timing:bool=False)->torch.Tensor:
         """
             Parameters
             ----------
@@ -158,39 +152,29 @@ class HuggingFaceCLIP(nn.Module):
         if isinstance(texts, str):
             texts = [texts]
             is_single = True
-        emb_texts = []
-        if batch_size is None:
-            if verbose:
-                texts = tqdm(texts, total=len(texts), desc="Text Encoding")
-            for text in texts:
-                text       = self.preprocess_texts([text])
-
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch  = self.model.get_text_features(**text)
-                else:
-                    emb_batch  = self.model.get_text_features(**text)
-
-                if emb_batch.device != torch.device(device):
-                    emb_batch = emb_batch.to(device)
-                emb_texts.append(emb_batch)
-            emb_texts = torch.cat(emb_texts, 0)
-        else:
+    
+        if batch_size is not None:
             texts = TextLoader(texts, batch_size)
-            if verbose:
-                texts = tqdm(texts, total=len(texts), desc="Text Encoding")
-            for batch in texts:
+        else:
+            texts = [self.preprocess_texts(text) for text in texts]
 
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch  = self.model.get_text_features(**batch)
-                else:
-                    emb_batch  = self.model.get_text_features(**batch)
+        if verbose:
+            texts = tqdm(texts, total=len(texts), desc="Text Encoding")
 
-                if emb_batch.device != torch.device(device):
-                    emb_batch = emb_batch.to(device)
-                emb_texts.append(emb_batch)
-            emb_texts = torch.cat(emb_texts, 0)
+        emb_texts = []
+
+        for text in texts:
+            if self.no_grad:
+                with torch.no_grad():
+                    emb_batch  = self.encode_text(**text)
+            else:
+                emb_batch  = self.encode_text(**text)
+            if emb_batch.device != torch.device(device):
+                emb_batch = emb_batch.to(device)
+            emb_texts.append(emb_batch)
+        
+        emb_texts = torch.cat(emb_texts, 0)
+      
         if is_single:
             return emb_texts[0]
         else:
