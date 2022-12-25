@@ -52,10 +52,12 @@ class HuggingFaceCLIP(nn.Module):
         texts = ["a photo of" + text for text in texts]
         return self.tokenizer(texts, padding=True, return_tensors="pt")
 
-    def encode_image(self, image):
+    def encode_image(self, image:torch.Tensor):
+        if image.dim() == 3:
+            image = image[None, ...]
         return self.model.get_image_features(pixel_values=image)
 
-    def encode_text(self, input_ids, attention_mask):
+    def encode_text(self, input_ids:torch.Tensor, attention_mask:torch.TensorType):
         return self.model.get_text_features(input_ids=input_ids, attention_mask=attention_mask)
 
     def encode_images(self, images:Union[List[PILImage], PILImage], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False, return_timing:bool=False)->torch.Tensor:

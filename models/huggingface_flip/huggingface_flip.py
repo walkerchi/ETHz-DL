@@ -128,8 +128,10 @@ class HuggingFaceFLIP(HuggingFaceCLIP):
     def preprocess_texts(self, texts:List[str]):
         return self.text_encoder.preprocess(texts)
 
-    def encode_image(self, image):
+    def encode_image(self, image:torch.Tensor):
+        if image.dim() == 3:
+            image = image[None, ...]
         return self.image_encoder(image)
 
-    def encode_text(self, input_ids, attention_mask):
+    def encode_text(self, input_ids:torch.tensor, attention_mask:torch.Tensor):
         return self.text_encoder(input_ids, attention_mask)

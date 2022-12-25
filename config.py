@@ -31,6 +31,8 @@ class DatasetConfig:
             'name'  :self.name,
             'kwargs':self.kwargs
         }
+    def build(self):
+        return self.__call__()
     def __call__(self):
         """Build and init the dataset and return
             Returns
@@ -54,6 +56,7 @@ class ModelsConfig:
     """
 
     def __init__(self,config, device, cache_type):
+       
         self.device = device
         self.cache_type = cache_type
         self.name   = config['name']
@@ -75,6 +78,8 @@ class ModelsConfig:
         return result
     def __len__(self):
         return len(self.name)
+    def build(self):
+        return self.__call__()
     def __call__(self):
         """Build the CLIP models and wrap them in CasCLIP
             Return
@@ -128,7 +133,7 @@ class Config:
                     model to use as a baseline comparison for `speedup` experiments
     """
     def __init__(self,config):
-        
+      
         self.topm         = config['topm']         if 'topm'          in config else None
         self.topk         = config['topk']         if 'topk'          in config else [1]  
         self.seed         = config['seed']         if 'seed'          in config else 123456789
@@ -189,9 +194,13 @@ class Config:
         now      = datetime.now()
         log_path = os.path.join(log_path, now.strftime('%Y-%m-%d_%H-%M-%M')+'.log')
         logging.basicConfig(
-            filename    = log_path, 
             level       = getattr(logging,self.logging_level)
         ) 
-        logging.getLogger().addHandler(logging.StreamHandler())
-        logging.info("\n"+toml.dumps(self.to_dict()))
+        logger = logging.getLogger(self.filename)
+        logger.setLevel(getattr(logging, self.logging_level))
+        logger.addHandler(logging.StreamHandler())
+        logger.addHandler(logging.FileHandler(log_path))
+        logger.info("\n"+toml.dumps(self.to_dict()))
+
+
 
