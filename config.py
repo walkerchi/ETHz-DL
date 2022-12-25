@@ -132,7 +132,7 @@ class Config:
         base_model: str, required if experiment == `speedup`
                     model to use as a baseline comparison for `speedup` experiments
     """
-    def __init__(self,config):
+    def __init__(self,config, init_logging:bool=True):
       
         self.topm         = config['topm']         if 'topm'          in config else None
         self.topk         = config['topk']         if 'topk'          in config else [1]  
@@ -162,7 +162,8 @@ class Config:
         assert self.topm is None or len(self.topm) + 1 == len(self.models), f"The length of `topm` in configure file is expected to be {len(self.models)-1}, but got {len(self.topm)}" 
 
         self.init_random_seed()
-        self.init_logging()
+        if init_logging:
+            self.init_logging()
 
     def to_dict(self):
         return {
@@ -176,7 +177,8 @@ class Config:
             "device":   self.device,
             "batch_size":self.batch_size,
             "f":self.f,
-            "cache_type":self.cache_type
+            "cache_type":self.cache_type,
+            # "n_reps":    self.n_reps
         }
 
     def init_random_seed(self):
