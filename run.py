@@ -134,7 +134,7 @@ Evaluate an experiment
     config['filename'] = filename
     config = Config(config)
     logger = logging.getLogger(config.filename)
-    logger.info("Full configuration: " + str(config.to_dict()))
+    #logger.info("Full configuration: " + str(config.to_dict()))
 
     getattr(Task, config.experiment)(config)
 

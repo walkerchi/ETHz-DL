@@ -76,9 +76,9 @@ class OpenAICLIP(nn.Module):
         with torch.no_grad():
             return tokenize(["a photo of " + text for text in texts])
 
-    def encode_image(self, image):
+    def encode_image(self, image:torch.Tensor):
         return self.model.encode_image(image)
-    def encode_text(self, text):
+    def encode_text(self, text:torch.Tensor):
         return self.model.encode_text(text)
 
     def encode_images(self, images:Union[List[PILImage], PILImage], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False, return_timing:bool=False)->torch.Tensor:
@@ -119,7 +119,7 @@ class OpenAICLIP(nn.Module):
         images = self.preprocess_images(images)
 
         if batch_size is not None:
-            images = DataLoader(self.preprocess_images(images), batch_size=batch_size)
+            images = DataLoader(images, batch_size=batch_size)
 
         if verbose:
             images = tqdm(images, total=len(images), desc="Image Encoding")
@@ -129,6 +129,8 @@ class OpenAICLIP(nn.Module):
         start_time = time.process_time()
 
         for image in images:
+            if image.dim() == 3:
+                image = image[None, ...]
             if self.no_grad:
                 with torch.no_grad():
                     emb_batch  = self.encode_image(image)
@@ -181,8 +183,8 @@ class OpenAICLIP(nn.Module):
             texts = [texts]
             is_single = True
         
-        texts = self.preprocess_texts([texts])
-        
+        texts = self.preprocess_texts(texts)
+
         if batch_size is not None:
             texts = TextLoader(texts, batch_size)
        
@@ -192,6 +194,8 @@ class OpenAICLIP(nn.Module):
         emb_texts = []
 
         for text in texts:
+            if text.dim() == 1:
+                text = text[None, ...]
             if self.no_grad:
                 with torch.no_grad():
                     emb_batch  = self.encode_text(text)

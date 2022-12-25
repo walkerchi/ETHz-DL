@@ -5,11 +5,11 @@ topk            = [1, 5, 10]
 seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cpu'
-f      = 0.01
+f               = 0.01
 batch_size      = 4
 
 [dataset.kwargs]
-n_samples       = 1000
+n_samples       = 500
 layout          = 'image-caption[0]'
 
 [models.0.kwargs]

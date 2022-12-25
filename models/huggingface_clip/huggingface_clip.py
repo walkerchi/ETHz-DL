@@ -18,11 +18,12 @@ class TextLoader(DataLoader):
         super().__init__(
             dataset    = texts,
             batch_size = batch_size,
+            collate_fn = self.collate_fn,
             **kwargs
         )
         self.tokenizer = CLIPTokenizer.from_pretrained(model_str)
     def collate_fn(self, texts:List[str]):
-        return self.tokenizer(["a photo of " + text for text in texts])
+        return self.tokenizer(["a photo of " + text for text in texts], padding=True, return_tensors="pt")
 
 
 class HuggingFaceCLIP(nn.Module):
@@ -53,8 +54,6 @@ class HuggingFaceCLIP(nn.Module):
         return self.tokenizer(texts, padding=True, return_tensors="pt")
 
     def encode_image(self, image:torch.Tensor):
-        if image.dim() == 3:
-            image = image[None, ...]
         return self.model.get_image_features(pixel_values=image)
 
     def encode_text(self, input_ids:torch.Tensor, attention_mask:torch.TensorType):
@@ -106,6 +105,8 @@ class HuggingFaceCLIP(nn.Module):
         start_time = time.process_time()
 
         for image in images:
+            if image.dim() == 3:
+                image = image[None, ...]
             if self.no_grad:
                 with torch.no_grad():
                     emb_batch  = self.encode_image(image)
@@ -158,7 +159,7 @@ class HuggingFaceCLIP(nn.Module):
         if batch_size is not None:
             texts = TextLoader(texts, batch_size)
         else:
-            texts = [self.preprocess_texts(text) for text in texts]
+            texts = [self.preprocess_texts([text]) for text in texts]
 
         if verbose:
             texts = tqdm(texts, total=len(texts), desc="Text Encoding")
