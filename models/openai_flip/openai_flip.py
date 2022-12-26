@@ -1,4 +1,5 @@
 import os
+import time
 import torch 
 import torch.nn as nn 
 import torch.nn.functional as F
@@ -8,6 +9,7 @@ from typing import List, Union, Optional
 from PIL.ImageFile import ImageFile as PILImage
 
 from ..openai_clip.openai_clip import load,tokenize
+from ..openai_clip import OpenAICLIP
 
 CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),".cache")
 
@@ -120,28 +122,19 @@ class OpenAICLIPTextEncoder(nn.Module):
         return tokenize(["a photo of " + text for text in texts])
 
 
-class OpenAIFLIP(nn.Module):
+class OpenAIFLIP(OpenAICLIP):
     def __init__(self, p:float, model_str:str, cache_dir:str=CACHE_DIR):
-        super().__init__()
+        super(OpenAICLIP, self).__init__()
         assert model_str.startswith("ViT"), f"FLIP can only be used to optimize ViT not CNN"
         assert p>=0.0 and p<=1.0, f"the drop probability p should be between [0,1]"
         self.image_encoder = MAEImageEncoder(p, model_str, cache_dir)
         self.text_encoder  = OpenAICLIPTextEncoder(model_str, cache_dir)
         self.model_str     = model_str 
         self.p             = p
-        self.no_grad       = True
-
-    def set_no_grad(self, state=True):
-        self.no_grad = state
-        return self
 
     @property
     def image_encoder_str(self):
         return f"OpenAIFLIP<{self.model_str},{self.p}>.ImageEncoder"
-    
-    @property
-    def text_encoder_str(self):
-        return f"OpenAICLIP<{self.model_str}>.TextEncoder"
 
     def preprocess_images(self, images:List[PILImage]):
         return self.image_encoder.preprocess(images)
@@ -149,128 +142,8 @@ class OpenAIFLIP(nn.Module):
     def preprocess_texts(self, texts:List[str]):
         return self.text_encoder.preprocess(texts)
 
-    def encode_images(self, images:Union[List[PILImage], PILImage], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False)->torch.Tensor:
-        """
-            Parameters
-            ----------
-                images:     Union[List[PILImage], PILImage]
-                            could input a list of PIL.Image or a single.
-                            If input a single, the output shape will be [n_emb]
-                            else the output will be [n_image, n_emb]
-                batch_size: Optional[int]
-                            if batch_size is `None`, it will visit the image iteratively,
-                            else it will grab them in a dataloader and do it in batch
-                device:     str
-                            The output device for the embedding
-                            As the embeding is so big, so sometimes we should store them in cpu rather than gpu
-                            Of course, the runtime device is different from output device which you can set through `.cpu()`  or `.cuda()`
-                verbose:    bool
-                            if verbose, the tqdm progress bar will be showed 
-                            else, the encoding process will keep silent
-            
-            Returns
-            -------
-                emb_images: torch.FloatTensor[n_image, n_emb] or [e_emb]
-                            the embedding of the encoded images
-        """
-        is_single = False
-        if isinstance(images, PILImage):
-            images = [images]
-            is_single = True
-        emb_images = []
-        if batch_size is None:
-            if verbose:
-                images = tqdm(images, total=len(images), desc="Image Encoding")
-            for image in images:
-                image      = self.preprocess_images([image])
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch = self.image_encoder(image)
-                else:
-                    emb_batch  = self.image_encoder(image)
-                if emb_batch.device != torch.device(device):
-                    emb_batch = emb_batch.to(device)
-                emb_images.append(emb_batch)
-            emb_images = torch.cat(emb_images, 0)
-        else:
-            images = DataLoader(self.preprocess_images(images), batch_size=batch_size)
-            if verbose:
-                images = tqdm(images, total=len(images), desc="Image Encoding")
-            for batch in images:
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch = self.image_encoder(batch)
-                else:
-                    emb_batch  = self.image_encoder(batch)
-                if emb_batch.device != torch.device(device):
-                    emb_batch = emb_batch.to(device)
-                emb_images.append(emb_batch)
-            emb_images = torch.cat(emb_images, 0)
-       
-        if is_single:
-            return emb_images[0] 
-        else:
-            return emb_images
-
-    def encode_texts(self, texts:Union[List[str],str], batch_size:Optional[int]=None, device:str='cpu', verbose:bool=False)->torch.Tensor:
-        """
-            Parameters
-            ----------
-                texts:      Union[List[str], str]
-                            could input a list of str or a single.
-                            If input a single, the output shape will be [n_emb]
-                            else the output will be [n_text, n_emb]
-                batch_size: Optional[int]
-                            if batch_size is `None`, it will visit the text iteratively,
-                            else it will grab them in a dataloader and do it in batch
-                device:     str
-                            The output device for the embedding
-                            As the embeding is so big, so sometimes we should store them in cpu rather than gpu
-                            Of course, the runtime device is different from output device which you can set through `.cpu()`  or `.cuda()`
-                verbose:    bool
-                            if verbose, the tqdm progress bar will be showed 
-                            else, the encoding process will keep silent
-            Returns
-            -------
-                emb_texts:  torch.FloatTensor[n_text, n_emb] or [e_emb]
-                            the embedding of the encoded texts
-        """
-        is_single = False
-        if isinstance(texts, str):
-            texts = [texts]
-            is_single = True
-        emb_texts = []
-        if batch_size is None:
-            if verbose:
-                texts = tqdm(texts, total=len(texts), desc="Text Encoding")
-            for text in texts:
-                text       = self.preprocess_texts([text])
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch  = self.text_encoder(text)
-                else:
-                    emb_batch  = self.text_encoder(text)
-                if emb_batch.device != torch.device(device):
-                    emb_batch = emb_batch.to(device)
-                emb_texts.append(emb_batch)
-            emb_texts = torch.cat(emb_texts, 0)
-        else:
-            texts = TextLoader(texts, batch_size)
-            if verbose:
-                texts = tqdm(texts, total=len(texts), desc="Text Encoding")
-            for batch in texts:
-                if self.no_grad:
-                    with torch.no_grad():
-                        emb_batch  = self.text_encoder(batch)
-                else:
-                    emb_batch  = self.text_encoder(batch)
-                if emb_batch.device != torch.device(device):
-                    emb_batch = emb_batch.to(device)
-                emb_texts.append(emb_batch)
-            emb_texts = torch.cat(emb_texts, 0)
-        if is_single:
-            return emb_texts[0] 
-        else:
-            return emb_texts
-
-
+    def encode_image(self, image):
+        return self.image_encoder(image)
+    
+    def encode_text(self, text):
+        return self.text_encoder(text)

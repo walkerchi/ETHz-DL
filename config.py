@@ -31,6 +31,8 @@ class DatasetConfig:
             'name'  :self.name,
             'kwargs':self.kwargs
         }
+    def build(self):
+        return self.__call__()
     def __call__(self):
         """Build and init the dataset and return
             Returns
@@ -54,6 +56,7 @@ class ModelsConfig:
     """
 
     def __init__(self,config, device, cache_type):
+       
         self.device = device
         self.cache_type = cache_type
         self.name   = config['name']
@@ -75,6 +78,8 @@ class ModelsConfig:
         return result
     def __len__(self):
         return len(self.name)
+    def build(self):
+        return self.__call__()
     def __call__(self):
         """Build the CLIP models and wrap them in CasCLIP
             Return
@@ -112,10 +117,9 @@ class Config:
                     The filename of the configure file.
                     It's used for logging, 
                     the log will be writen to a timed-named file under the folder f`.log\{filename}` 
-        query_rate: float, default 1.0
+        f: float, default 1.0
                     query rate for the experiment, it will be different in differet experiments
-                    in `topk` experiment, if 0.1, the experiment will carry out on 10% of the texts
-                    in `speedup` experiment, if 0.1, it will calcuate the speed up for 10% images encoded by the large model
+                    in `speedup` experiment, it will calcuate the speed up assuming that only a fraction of f images will ever be returned by a search engine.
         cache_type: str, default `sparse`
                     the cache type in CasCLIP, choose from [`sparse`, `dense`]
         experiment: str, default `topk`
@@ -123,11 +127,13 @@ class Config:
                     if `topk`, it will run calcuate the `topk` result of the model on the given dataset 
                     if `speedup`, it will compare the time cost for the large model(last layer) and the small model(first layer) to compute the speed up
                         the speedup is given by $speedup = large\_time / (small\_time + query\_ratio * large\_time)$
-        times:      int, default 3
-                    the measure time for `speedup` experiment
+        n_reps:      int, default 3
+                    how often to repeat timing measurements for a `speedup` experiment
+        base_model: str, required if experiment == `speedup`
+                    model to use as a baseline comparison for `speedup` experiments
     """
-    def __init__(self,config):
-        
+    def __init__(self,config, init_logging:bool=True):
+      
         self.topm         = config['topm']         if 'topm'          in config else None
         self.topk         = config['topk']         if 'topk'          in config else [1]  
         self.seed         = config['seed']         if 'seed'          in config else 123456789
@@ -135,10 +141,14 @@ class Config:
         self.device       = config['device']       if 'device'        in config else DEFAULT_DEVICE
         self.batch_size   = config['batch_size']   if 'batch_size'    in config else None
         self.filename     = config['filename']
-        self.query_rate   =config['query_rate']    if 'query_rate'    in config else 1.0  # different meaning in two experiments
+        self.f            =config['f']    if 'f'    in config else 1.0  # different meaning in two experiments
         self.cache_type   =config['cache_type']    if 'cache_type'    in config else "sparse"
         self.experiment   =config['experiment']    if 'experiment'    in config else "topk"
-        self.times        =config['times']         if 'times'         in config else 3
+        if self.experiment == "speedup":
+            self.base_model = ModelsConfig(config['base_model'], self.device, self.cache_type)
+        else:
+            self.base_model = None
+        self.n_reps        =config['n_reps']         if 'n_reps'         in config else 3
 
         self.dataset = DatasetConfig(config['dataset'])
         self.models  = ModelsConfig(config['models'], self.device, self.cache_type)
@@ -152,20 +162,23 @@ class Config:
         assert self.topm is None or len(self.topm) + 1 == len(self.models), f"The length of `topm` in configure file is expected to be {len(self.models)-1}, but got {len(self.topm)}" 
 
         self.init_random_seed()
-        self.init_logging()
+        if init_logging:
+            self.init_logging()
 
     def to_dict(self):
         return {
             "dataset":  self.dataset.to_dict(),
             "models":   self.models.to_dict(),
+            "base_model":   self.base_model.to_dict() if self.base_model is not None else "",
             "topm":     self.topm,
             "topk":     self.topk,
             "seed":     self.seed,
             "logging_level":self.logging_level,
             "device":   self.device,
             "batch_size":self.batch_size,
-            "query_rate":self.query_rate,
-            "cache_type":self.cache_type
+            "f":self.f,
+            "cache_type":self.cache_type,
+            # "n_reps":    self.n_reps
         }
 
     def init_random_seed(self):
@@ -183,9 +196,13 @@ class Config:
         now      = datetime.now()
         log_path = os.path.join(log_path, now.strftime('%Y-%m-%d_%H-%M-%M')+'.log')
         logging.basicConfig(
-            filename    = log_path, 
             level       = getattr(logging,self.logging_level)
         ) 
-        logging.getLogger().addHandler(logging.StreamHandler())
-        logging.info("\n"+toml.dumps(self.to_dict()))
+        logger = logging.getLogger(self.filename)
+        logger.setLevel(getattr(logging, self.logging_level))
+        logger.addHandler(logging.StreamHandler())
+        logger.addHandler(logging.FileHandler(log_path))
+        logger.info("\n"+toml.dumps(self.to_dict()))
+
+
 

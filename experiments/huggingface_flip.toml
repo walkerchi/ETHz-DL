@@ -1,6 +1,6 @@
 # OpenAIFLIP
 dataset.name    = 'MSCOCO'
-models.name     = ['OpenAIFLIP']
+models.name     = ['HuggingFaceFLIP']
 topk            = [1, 5, 10, 15 ,20, 25, 30, 35, 40]
 seed            = 123456789
 logging_level   = 'INFO'
@@ -13,6 +13,6 @@ n_samples       = 500
 layout          = 'image-caption[0]'
 
 [models.0.kwargs]
-p               = 0.5
-model_str       = "ViT-B/32"
+p               = 0.0
+model_str       = "openai/clip-vit-base-patch32"
 

@@ -5,7 +5,7 @@ topm            = [25]
 seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cpu'
-query_rate      = 0.1
+f      = 0.1
 
 
 [dataset.kwargs]
