@@ -26,6 +26,10 @@ class Task:
         def time_model(model, name):
             img_times = []
             # Measure image encoding time
+            if config.do_warmup_rep:
+                logger.info("Warming up...")
+                model.encode_images(dataset.images, batch_size=config.batch_size, verbose=True, return_timing=True)
+            logger.info(f"Timing {name}...")
             for _ in range(config.n_reps):
                 time = model.encode_images(dataset.images, batch_size=config.batch_size, verbose=True, return_timing=True)
                 img_times.append(time / len(dataset.images))
@@ -65,22 +69,20 @@ class Task:
         logger      = logging.getLogger(config.filename)
         dataset     = config.dataset.build()
         model       = config.models.build()
-        logger.info(f"Building index...")
+        logger.info(f"Building cache...")
         build_start       = time.process_time()
         model.build(dataset.images, batch_size=config.batch_size, verbose=True)
         build_end         = time.process_time()
-        logger.info(f"Building cost:{build_end-build_start:7.3f}s")
 
         topk_score  = np.array([0.0 for i in range(len(config.topk))])
         times       = []
 
         index       = np.arange(len(dataset.images))
-        np.random.shuffle(index)
         labels      = index
         inputs      = [dataset.captions[i]  for i in index]
 
         logger.info(f"Querying...")
-        for label, text in tqdm(zip(labels,inputs),total=len(index), desc="Query Caption"):
+        for label, text in tqdm(zip(labels,inputs),total=len(index), desc="Query Captioning"):
 
             start   = time.process_time()
             indices = model.query(text, topk=max(config.topk), topm=config.topm, batch_size=config.batch_size)
@@ -93,8 +95,6 @@ class Task:
         times = np.array(times)
         query_end = time.process_time()
         topk_score /= len(index)
-        logger.info(f"Query cost:{sum(times):7.3f}s, time each query:{np.mean(times):5.3f}({np.std(times):5.3f})s, max a query:{np.max(times):5.3f}s, min a query:{np.min(times):5.3f}s\n\n")
-        logger.info(f"Build and Query time:{query_end - build_start:7.3f}s\n\n")
 
         model.log_cache()
 
@@ -107,7 +107,7 @@ class Task:
 def main():
     parser = argparse.ArgumentParser(description=
 """
-Evaluate an experiment
+Run an experiment
 """)
     parser.add_argument(
         "--id",

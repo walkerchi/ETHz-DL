@@ -146,6 +146,7 @@ class Config:
         self.experiment   =config['experiment']    if 'experiment'    in config else "topk"
         if self.experiment == "speedup":
             self.base_model = ModelsConfig(config['base_model'], self.device, self.cache_type)
+            self.do_warmup_rep = config["do_warmup_rep"]
         else:
             self.base_model = None
         self.n_reps        =config['n_reps']         if 'n_reps'         in config else 3
@@ -200,7 +201,6 @@ class Config:
         ) 
         logger = logging.getLogger(self.filename)
         logger.setLevel(getattr(logging, self.logging_level))
-        logger.addHandler(logging.StreamHandler())
         logger.addHandler(logging.FileHandler(log_path))
         logger.info("\n"+toml.dumps(self.to_dict()))
 

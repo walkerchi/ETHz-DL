@@ -1,5 +1,6 @@
+# 2 level cascade
 dataset.name    = 'MSCOCO'
-models.name     = ['HuggingFaceCLIP', 'HuggingFaceCLIP']
+models.name     = ['HuggingFaceFLIP', 'HuggingFaceFLIP']
 base_model.name = ['HuggingFaceCLIP']
 seed            = 123456789
 logging_level   = 'INFO'
@@ -11,13 +12,15 @@ do_warmup_rep   = true
 f               = 0.1
 
 [dataset.kwargs]
-n_samples       = 128  # only need sufficiently many samples to get accurate timing
-layout    = 'caption'
+n_samples       = 128   # only need sufficiently many samples to get accurate timing
+layout    = 'image-caption[0]'
 
 [models.0.kwargs]
-model_str = "openai/clip-vit-base-patch32"
+p         = 0.5
+model_str = "openai/clip-vit-base-patch16"
 
 [models.1.kwargs]
+p         = 0.5
 model_str = "openai/clip-vit-base-patch16"
 
 [base_model.0.kwargs]
