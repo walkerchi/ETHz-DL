@@ -22,9 +22,7 @@ from prune.rescale import rescale_mask
 from evaluate.eval import test_model
 from utils.schedule import get_pruning_schedule
 
-
 logger = logging.getLogger(__name__)
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_name", type=str, default='openai/clip-vit-base-patch32')
@@ -40,8 +38,8 @@ parser.add_argument("--metric", type=str, choices=[
     "latency",
 ], default="mac")
 parser.add_argument("--constraint", type=float, default=0.5,
-    help="MAC/latency constraint relative to the original model",
-)
+                    help="MAC/latency constraint relative to the original model",
+                    )
 parser.add_argument("--mha_lut", type=str, default=None)
 parser.add_argument("--ffn_lut", type=str, default=None)
 parser.add_argument("--num_samples", type=int, default=128)
@@ -63,6 +61,12 @@ def main():
             f"seed_{args.seed}",
         )
     os.makedirs(args.output_dir, exist_ok=True)
+
+    device = torch.device('cpu')
+    if args.gpu != 0:
+        # os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
 
     # Initiate the logger
     logging.basicConfig(
@@ -104,13 +108,13 @@ def main():
     )
 
     # Prepare the model
-    model = model.cpu() #cuda()
+    model = model.to(device)
     model.eval()
     for param in model.parameters():
         param.requires_grad_(False)
 
-    head_mask = torch.ones(config.num_hidden_layers, config.num_attention_heads)#cuda()
-    neuron_mask = torch.ones(config.num_hidden_layers, config.intermediate_size)#cuda()
+    head_mask = torch.ones(config.num_hidden_layers, config.num_attention_heads, device=device)
+    neuron_mask = torch.ones(config.num_hidden_layers, config.intermediate_size, device=device)
 
     test_dataset = Subset(
         training_dataset,
@@ -125,7 +129,7 @@ def main():
     )
 
     # Retrieve original model accuracy
-    unpruned_losses = test_model(model, head_mask, neuron_mask, test_dataloader)
+    unpruned_losses = test_model(model, head_mask, neuron_mask, test_dataloader, device)
 
     for i in range(config.num_hidden_layers):
 
@@ -152,7 +156,6 @@ def main():
         pruned_mac, orig_mac = compute_mask_mac(head_mask, neuron_mask, seq_len, config.hidden_size)
         logger.info(f"Pruned Model MAC: {pruned_mac / orig_mac * 100.0:.2f} %")
 
-
         test_dataset = Subset(
             training_dataset,
             np.random.choice(len(training_dataset), 64).tolist(),
@@ -166,14 +169,14 @@ def main():
         )
 
         # Evaluate the accuracy
-        losses = test_model(model, head_mask, neuron_mask, test_dataloader)
+        losses = test_model(model, head_mask, neuron_mask, test_dataloader, device)
         logger.info(f"Losses for head mask only: {losses[0]}")
         logger.info(f"Losses for neuron mask only: {losses[1]}")
         logger.info(f"Losses for both masks: {losses[2]}")
         logger.info(f"Losses for random binary masks with same number of zeros: {losses[3]}")
         # Save the masks
         torch.save(head_mask, os.path.join(args.output_dir, "head_mask_{}.pt".format(i)))
-        if torch.any(losses < args.min_accuracy * unpruned_losses):
+        if torch.any(losses < (args.min_accuracy * unpruned_losses)):
             break
 
 
