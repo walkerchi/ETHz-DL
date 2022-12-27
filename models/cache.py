@@ -1,61 +1,30 @@
 import torch
 from typing import Union,List
-from abc import abstractmethod
-
-class Cache:
-    def __init__(self, capacity:int, shape:tuple):
-        self.capacity = capacity
-        self.shape    = shape
-    @abstractmethod
-    def __len__(self):
-        raise NotImplementedError("")
-    @abstractmethod
-    def __contains__(self, key:int):
-        """
-            Parameters
-            ----------
-                key:    int
-            
-            Returns
-            -------
-                bool:   whether  key is inside cache
-        """
-        raise NotImplementedError("")
-    @abstractmethod
-    def not_contain(self, keys:torch.Tensor):
-        """
-            Parameters
-            ----------
-                key:    torch.LongTensor[batch]
-            Returns
-            -------
-                LongTensor[batch], the index not contain in the cache
-        """
-        raise NotImplementedError("")
-    @abstractmethod
-    def __getitem__(self, key:Union[int,torch.Tensor]):
-        """
-            Parameters
-            ----------
-                key:    int | torch.LongTensor[n_batch]
-            
-            Returns
-            -------
-                torch.FloatTensor [n_dim] | [batch, n_dim]
-        """
-        raise NotImplementedError("")
-    @abstractmethod
-    def __setitem__(self, key:Union[int, torch.Tensor], value:torch.Tensor):
-        """
-            Parameters
-            ----------
-                key:    int | torch.LongTensor
-                value:  torch.FloatTensor [n_dim] | [batch, n_dim]
-        """
-        raise NotImplementedError("")
-
 
 class SparseCache():
+    """
+        Usage:
+        >>> capacity = 10
+        >>> indexes  = [1,4,5]
+        >>> values   = torch.rand(3,  128)
+        >>> cache    = SparseCache(capcity, indexes,  values)
+        >>> len(cache)
+        3
+        >>> 2 in cache
+        False
+        >>> 1 in cache
+        True
+        >>> cache[1]
+        torch.Tensor([...]) # shape = [128]
+        >>> cache[[1,4]]
+        torch.Tensor([[...],[...]]) # shape = [2,128]
+        >>> cache[3] = torch.rand(128)
+        >>> len(cache)
+        4
+        >>> cache[[7,4,9]] = torch.rand(3,128)
+        >>> len(cache)
+        6
+    """
     def __init__(self, capacity:int, keys:List[int], values:torch.Tensor):
         """
             capacity:   int

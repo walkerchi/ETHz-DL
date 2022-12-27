@@ -1,5 +1,5 @@
 dataset.name    = 'MSCOCO'
-models.name     = ['OpenAICLIP', 'OpenAICLIP']
+models.name     = ['OpenAIFLIP', 'OpenAICLIP']
 base_model.name = ['OpenAICLIP']
 topk            = [1, 5, 10]
 topm            = [50]
@@ -14,7 +14,8 @@ experiment      = "topk"
 layout    = 'caption'
 
 [models.0.kwargs]
-model_str = "ViT-B/16"
+p         = 0.5
+model_str = "ViT-B/32"
 
 [models.1.kwargs]
 model_str = "ViT-B/32"

@@ -146,7 +146,6 @@ class Config:
         self.experiment   =config['experiment']    if 'experiment'    in config else "topk"
         if self.experiment == "speedup":
             self.base_model = ModelsConfig(config['base_model'], self.device, self.cache_type)
-            self.do_warmup_rep = config["do_warmup_rep"]
         else:
             self.base_model = None
         self.n_reps        =config['n_reps']         if 'n_reps'         in config else 3
@@ -156,7 +155,7 @@ class Config:
         
         assert self.device in ["cpu", "cuda"]
         assert self.cache_type in ["sparse", "dense"]
-        assert self.experiment in ["topk", "speedup"]
+        assert self.experiment in ["topk", "speedup", "distill"]
         assert self.topm is None or isinstance(self.topm, list), f"`topm` in configure file should be list of int or `None`, but got {self.topm}"
         assert isinstance(self.topk, list), f"`topk` in configure file should be list of int, but got {self.topk}"
         assert isinstance(self.logging_level, str), f"`logging_level` in configure file should be str, but got {self.logging_level}"
@@ -201,6 +200,7 @@ class Config:
         ) 
         logger = logging.getLogger(self.filename)
         logger.setLevel(getattr(logging, self.logging_level))
+        logger.addHandler(logging.StreamHandler())
         logger.addHandler(logging.FileHandler(log_path))
         logger.info("\n"+toml.dumps(self.to_dict()))
 

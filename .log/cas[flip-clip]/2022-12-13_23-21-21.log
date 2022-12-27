@@ -1,0 +1,98 @@
+INFO:root:
+topm = [ 35,]
+topk = [ 1, 5, 10,]
+seed = 123456789
+logging_level = "INFO"
+device = "cpu"
+batch_size = 8
+query_rate = 0.1
+cache_type = "dense"
+
+[dataset]
+name = "MSCOCO"
+
+[models]
+name = [ "OpenAIFLIP", "OpenAICLIP",]
+
+[dataset.kwargs]
+n_samples = 500
+layout = "image-caption[0]"
+
+[models.0]
+p = 0.5
+model_str = "ViT-B/32"
+
+[models.1]
+model_str = "ViT-B/32"
+
+INFO:root:loading dataset...
+INFO:root:loading models...
+INFO:root:Building index...
+INFO:root:Building cost: 18.003s
+INFO:root:Querying...
+INFO:root:Query cost: 33.897s, time each query:0.678(0.657)s, max a query:2.479s, min a query:0.051s
+
+
+INFO:root:Build and Query time: 52.043s
+
+
+INFO:root:
+<========CasCLIP Cache=========>
+INFO:root:OpenAICLIP<ViT-B/32>.ImageEncoder:88%
+INFO:root:
+-------topk score-------
+INFO:root:top1:0.62000
+INFO:root:top5:0.94000
+INFO:root:top10:0.96000
+INFO:root:
+-----time each text-----
+INFO:root:[0]:2.479s
+INFO:root:[1]:2.333s
+INFO:root:[2]:1.450s
+INFO:root:[3]:1.943s
+INFO:root:[4]:1.687s
+INFO:root:[5]:0.545s
+INFO:root:[6]:1.872s
+INFO:root:[7]:1.444s
+INFO:root:[8]:0.391s
+INFO:root:[9]:0.610s
+INFO:root:[10]:0.695s
+INFO:root:[11]:2.063s
+INFO:root:[12]:1.380s
+INFO:root:[13]:1.407s
+INFO:root:[14]:0.824s
+INFO:root:[15]:1.668s
+INFO:root:[16]:0.129s
+INFO:root:[17]:0.742s
+INFO:root:[18]:0.810s
+INFO:root:[19]:1.184s
+INFO:root:[20]:0.329s
+INFO:root:[21]:0.608s
+INFO:root:[22]:0.485s
+INFO:root:[23]:0.203s
+INFO:root:[24]:0.331s
+INFO:root:[25]:0.519s
+INFO:root:[26]:0.051s
+INFO:root:[27]:0.052s
+INFO:root:[28]:0.494s
+INFO:root:[29]:0.275s
+INFO:root:[30]:0.605s
+INFO:root:[31]:0.542s
+INFO:root:[32]:0.274s
+INFO:root:[33]:0.348s
+INFO:root:[34]:0.134s
+INFO:root:[35]:0.188s
+INFO:root:[36]:0.127s
+INFO:root:[37]:0.061s
+INFO:root:[38]:0.398s
+INFO:root:[39]:0.271s
+INFO:root:[40]:0.228s
+INFO:root:[41]:0.511s
+INFO:root:[42]:0.224s
+INFO:root:[43]:0.158s
+INFO:root:[44]:0.219s
+INFO:root:[45]:0.059s
+INFO:root:[46]:0.135s
+INFO:root:[47]:0.135s
+INFO:root:[48]:0.141s
+INFO:root:[49]:0.136s

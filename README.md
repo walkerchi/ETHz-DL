@@ -1,39 +1,13 @@
-# Model Cascades for Efficient Image Search
+# ETHz-DeepLearning-Project
 
-This is the repository for the 2022 Deep Learning project *Model Cascades
-for Efficient Image Search*.
+## 1.Setup
 
-* `Prerequisites` describes how to set up your environment to run our experiments.
+### 1.1Python environment
 
-* `Usage` explains how to run our experiments.
+1. Create a new Python 3.9.7 environment.
+1. Install all packages in `requirements.txt`.
 
-* `Reproduction` explains how to reproduce individual results in our paper.
-
-* `Layout` presents the content and organization of this repository.
-
-* `Contribute` explains how to add new models.
-
-## Prerequisites
-
-### System
-
-We tested this code on a machine with the following specs:
-
-| Operating System | Ubuntu 20.04 |
-|---|---|
-| CPU | Intel Core i7-11800H @ 2.30GHz |
-| Memory | 32 GB |
-| GPU | None |
-
-### Software
-
-0. Create a new Python 3.9.7 environment.
-
-1. Install all packages in `requirements.txt` by running
-   ```
-   pip install -r requirements.txt
-   ```
-### Datasets
+### 1.2Datasets
 
 #### MSCOCO
 
@@ -42,41 +16,29 @@ We tested this code on a machine with the following specs:
    The images are in `datasets/mscoco/val2017/\d+.jpg`
 2. Download http://images.cocodataset.org/annotations/annotations_trainval2017.zip
    and extract it into `datasets/mscoco`.
+   The annotation file is in `datasets/mscoco/annotations_trainval2017/annotations/captions_val2017.json`
 
-#### Flickr30k
+#### Filckr30
 
 1. Download https://www.kaggle.com/datasets/hsankesara/flickr-image-dataset and extract it into `dataset/flickr30`.
+   The images are in `datasets/flickr30/flickr30k_images/\d+.jpg`.
+   The caption file is in `datasets/filckr30/results.csv`.
 
-## Usage
+## 2.Usage
 
-The directory `experiments` stores the specification of each experiment in a `.toml` config file.
+1. Run `python run.py --id 1` to run experiment configure file `experiments/0001.toml`.
 
-To run experiment `experiments/<EXPERIMENT>.toml`, execute
+   Run `python run.py --name example` to run experiment configure file `experiments/example.toml`
 
-```sh
-python run.py --name <EXPERIMENT>
-```
+2. The previous command logs results to `.log/<experiment-name>/<time>.log`.
 
-The previous command logs results to `.log/<EXPERIMENT>/<time-of-execution>.log`.
+## 3.Contribution
 
+### 3.1 Style Guide
 
-## Reproduction
+[Numpy Python Code Style](https://peps.python.org/pep-0008/) which is the PEP-484 style for python
 
-First, make sure that you satisfy all prerequisites in Section *Prerequisites*.
-
-### Table <>
-
-Table <> presents the experiments named `experiments/2lvl_*.toml`.
-Follow Section `Usage` to reproduce these experiments.
-
-### Figure <>
-
-Figure <>
-
-## Layout
-
-TODO: Make prettier
-
+### 3.2 Structure
 - **datasets**: all dataset
   - mscoco
   - flickr30
@@ -89,14 +51,8 @@ TODO: Make prettier
   - ...
 - **run.py**: main file
 - **config.py**:Basic Configuration for experiement, models and dataset
-
-## Contribute
-
-### Style Guide
-
-[Numpy Python Code Style](https://peps.python.org/pep-0008/) which is the PEP-484 style for python
   
-### New Model
+### 3.3 New Model
 If you add new model.
 1. you could **add your folder** under `models`.
 

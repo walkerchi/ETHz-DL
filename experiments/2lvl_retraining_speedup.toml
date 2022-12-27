@@ -1,24 +1,23 @@
 dataset.name    = 'MSCOCO'
-models.name     = ['HuggingFaceCLIP', 'HuggingFaceCLIP']
-base_model.name = ['HuggingFaceCLIP']
+models.name     = ['OpenAICLIP', 'OpenAICLIP']
+base_model.name = ['OpenAICLIP']
 seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cpu'
 batch_size      = 32
 experiment      = "speedup"
 n_reps          = 3
-do_warmup_rep   = true
 f               = 0.1
 
 [dataset.kwargs]
-n_samples       = 128  # only need sufficiently many samples to get accurate timing
-layout    = 'image-caption[0]'
+n_samples       = 1024  # only need sufficiently many samples to get accurate timing
+layout    = 'caption'
 
 [models.0.kwargs]
-model_str = "openai/clip-vit-base-patch32"
+model_str = "ViT-B/16"
 
 [models.1.kwargs]
-model_str = "openai/clip-vit-base-patch16"
+model_str = "ViT-B/32"
 
 [base_model.0.kwargs]
-model_str = "openai/clip-vit-base-patch16"
+model_str = "ViT-B/32"

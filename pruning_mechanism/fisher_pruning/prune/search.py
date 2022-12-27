@@ -5,46 +5,6 @@ from efficiency.mac import compute_mac, mac_per_head, mac_per_neuron
 
 
 @torch.no_grad()
-def prune_all_but_one(
-    config,
-    head_grads,
-    head_mask,
-):
-    num_hidden_layers = config.num_hidden_layers
-    num_attention_heads = config.num_attention_heads
-
-    head_importance = compute_fisher_info(head_grads)
-    # Globally rank heads and neurons
-    _, sorted_head_indicies = head_importance.view(-1).sort(descending=True)
-
-    pruned_layers = []
-    for i in range(num_hidden_layers):
-        row_min = torch.min(head_mask[i])
-        print(i, row_min)
-        if row_min == 0:
-            pruned_layers.append(torch.tensor(i))
-
-    done = False
-    i = 0
-    while not done:
-        fail = False
-        for l in pruned_layers:
-            if torch.equal(sorted_head_indicies[i] // num_attention_heads, l):
-                fail = True
-        if fail:
-            i += 1
-        else:
-            done = True
-    biggest_index = sorted_head_indicies[i]
-    layer = biggest_index // num_attention_heads
-    
-    head_mask = head_mask.view(-1)
-    head_mask[num_attention_heads * layer : num_attention_heads * (layer + 1)] = 0
-    head_mask[biggest_index] = 1
-    head_mask = head_mask.view(num_hidden_layers, num_attention_heads)
-    return head_mask
-
-@torch.no_grad()
 def search_mac(
     config,
     head_grads,

@@ -147,8 +147,10 @@ class CasCLIP(nn.Module):
         return candidate
 
 
-    def log_cache(self):
-        logging.info("\n<========CasCLIP Cache=========>")
+    def log_cache(self, logger=None):
+        if logger is None:
+            logger = logging
+        logger.info("\n<========CasCLIP Cache=========>")
         for k, v in self.cache_images_emb.items():
-            logging.info(f"{k}:{int(len(v)/v.capacity*100):2d}%")
+            logger.info(f"{k}:{int(len(v)/v.capacity*100):2d}%")
 
