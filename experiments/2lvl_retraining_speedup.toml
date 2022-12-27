@@ -12,7 +12,7 @@ f               = 0.1
 
 [dataset.kwargs]
 n_samples       = 128  # only need sufficiently many samples to get accurate timing
-layout    = 'caption'
+layout    = 'image-caption[0]'
 
 [models.0.kwargs]
 model_str = "openai/clip-vit-base-patch32"
