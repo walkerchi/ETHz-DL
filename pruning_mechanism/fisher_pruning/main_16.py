@@ -46,6 +46,7 @@ parser.add_argument("--mha_lut", type=str, default=None)
 parser.add_argument("--ffn_lut", type=str, default=None)
 parser.add_argument("--num_samples", type=int, default=128)
 parser.add_argument("--seed", type=int, default=8)
+parser.add_argument("--min_accuracy, type=float", default=0.8)
 
 
 def main():
@@ -98,7 +99,6 @@ def main():
     sample_dataloader = DataLoader(
         sample_dataset,
         batch_size=sample_batch_size,
-        #collate_fn=collate_fn,
         shuffle=False,
         pin_memory=True,
     )
@@ -111,6 +111,21 @@ def main():
 
     head_mask = torch.ones(config.num_hidden_layers, config.num_attention_heads)#cuda()
     neuron_mask = torch.ones(config.num_hidden_layers, config.intermediate_size)#cuda()
+
+    test_dataset = Subset(
+        training_dataset,
+        np.random.choice(len(training_dataset), 64).tolist(),
+    )
+    test_batch_size = 8
+    test_dataloader = DataLoader(
+        test_dataset,
+        batch_size=test_batch_size,
+        shuffle=False,
+        pin_memory=True,
+    )
+
+    # Retrieve original model accuracy
+    unpruned_losses = test_model(model, head_mask, neuron_mask, test_dataloader)
 
     for i in range(config.num_hidden_layers):
 
@@ -158,6 +173,8 @@ def main():
         logger.info(f"Losses for random binary masks with same number of zeros: {losses[3]}")
         # Save the masks
         torch.save(head_mask, os.path.join(args.output_dir, "head_mask_{}.pt".format(i)))
+        if torch.any(losses < args.min_accuracy * unpruned_losses):
+            break
 
 
 if __name__ == "__main__":
