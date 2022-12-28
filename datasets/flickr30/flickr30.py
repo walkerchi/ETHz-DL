@@ -1,4 +1,6 @@
 import csv 
+import os
+import re
 import pandas as pd
 import pathlib 
 from typing import Optional
@@ -42,7 +44,6 @@ class Flickr30:
                 images   = df['image_name'].tolist()   
                 captions = df['comment'].tolist()
             else:
-                assert n_samples <= length, f"the number of samples should not be greater than the total length"
                 images   = df['image_name'][:n_samples].tolist()
                 captions = df['comment'][:n_samples].tolist() 
         else:
@@ -59,7 +60,12 @@ class Flickr30:
         return len(self._captions)
     @property
     def images(self):
-        return [Image.open(image) for image in self._images]
+        imgs = []
+        for image in self._images:
+            img = Image.open(image)
+            img.load()
+            imgs.append(img)
+        return imgs
     @property
     def captions(self):
         return self._captions
