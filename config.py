@@ -155,7 +155,7 @@ class Config:
         
         assert self.device in ["cpu", "cuda"]
         assert self.cache_type in ["sparse", "dense"]
-        assert self.experiment in ["topk", "speedup"]
+        assert self.experiment in ["topk", "speedup", "distill"]
         assert self.topm is None or isinstance(self.topm, list), f"`topm` in configure file should be list of int or `None`, but got {self.topm}"
         assert isinstance(self.topk, list), f"`topk` in configure file should be list of int, but got {self.topk}"
         assert isinstance(self.logging_level, str), f"`logging_level` in configure file should be str, but got {self.logging_level}"

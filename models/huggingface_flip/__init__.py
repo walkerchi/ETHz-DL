@@ -1,1 +1,1 @@
-from .huggingface_flip import HuggingFaceFLIP
+from .huggingface_flip import HuggingFaceFLIP, HuggingFaceTextEncoder
