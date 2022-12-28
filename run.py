@@ -37,6 +37,7 @@ class Task:
 
         def time_models_config(models_config, name):
             total_time = 0
+            total_time_per_query = 0
             for idx in range(len(models_config)):
                 # If multiple models are instantiated at the same time, timing is skewed.
                 # Therefore, only instatiate a single model at a time.
@@ -45,13 +46,18 @@ class Task:
                 img_time = time_model(model, f"{name}[{idx}]")
                 fraction = 1 if idx == 0 else config.f
                 total_time += img_time * fraction
-            return total_time
-
-        base_time     = time_models_config(config.base_model, "base model")
-        cascaded_time = time_models_config(config.models, "cascaded model")
+                if idx > 0:
+                    total_time_per_query += img_time * models_config.topm[idx-1]
+            return total_time, total_time_per_query
+        
+        base_time, base_time_per_query     = time_models_config(config.base_model, "base model")
+        config.models.topm = config.topm
+        cascaded_time, cascaded_time_per_query = time_models_config(config.models, "cascaded model")
 
         speedup = base_time / cascaded_time
-        logger.info(f"speed up:{speedup.mean():5.3f}({speedup.std():5.3f})")
+        per_query_speedup = base_time_per_query / cascaded_time_per_query
+        logger.info(f"Speedup:{speedup.mean():5.3f}({speedup.std():5.3f})")
+        logger.info(f"Per-query speedup:{per_query_speedup.mean():5.3f}({per_query_speedup.std():5.3f})")
 
         return speedup
 
@@ -67,6 +73,7 @@ class Task:
         """
         logger  = logging.getLogger(config.filename)
         dataset = config.dataset.build()
+        print("len(dataset.images)", len(dataset.images))
         model   = config.models.build()
         logger.info(f"Building index...")
         build_start = time.process_time()

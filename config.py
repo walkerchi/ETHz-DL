@@ -60,6 +60,7 @@ class ModelsConfig:
         self.device = device
         self.cache_type = cache_type
         self.name   = config['name']
+        self.topm   = config.get('topm', None)
         self.kwargs = []
         for i in range(len(self.name)):
             if str(i) in config and "kwargs" in config[str(i)]:
