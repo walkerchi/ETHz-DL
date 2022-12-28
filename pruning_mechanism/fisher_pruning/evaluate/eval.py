@@ -23,8 +23,8 @@ def get_losses(model, head_mask, neuron_mask, dataloader, device):
         batch[0]['pixel_values'] = torch.squeeze(batch[0]['pixel_values']).to(device)
         outputs = model.get_image_features(**batch[0], head_mask=head_mask)
 
-        l = model.get_loss(outputs, batch[1].squeeze().to(device))
-        losses.append(l)
+        loss = model.get_loss(outputs, batch[1].squeeze().to(device))
+        losses.append(loss)
 
     if neuron_mask is not None:
         for handle in handles:

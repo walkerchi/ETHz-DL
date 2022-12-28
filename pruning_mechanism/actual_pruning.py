@@ -66,7 +66,7 @@ if __name__ == '__main__':
     model_name = 'openai/clip-vit-base-patch32'
     base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/'
     restriction = '0.6'
-    seed = 603
+    seed = 604
     save_path = f'pruned_models/vitB32_pruned_{restriction}_{seed}.pt'
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt', map_location=torch.device('cpu'))
     neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt', map_location=torch.device('cpu'))
@@ -96,3 +96,5 @@ if __name__ == '__main__':
         print("SUCCESS: The models are equivalent.")
         torch.save(pruned_model, save_path)
         print("Saved successfully.")
+    else:
+        print("Something has gone wrong.")

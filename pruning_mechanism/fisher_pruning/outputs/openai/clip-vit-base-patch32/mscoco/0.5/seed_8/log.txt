@@ -20,3 +20,24 @@
 12/17/2022 13:31:21 - INFO - __main__ - Pruned Model MAC: 50.00 %
 12/17/2022 19:47:47 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.5, gpu=1, model_name='openai/clip-vit-base-patch32', num_samples=32, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.5/seed_8', seed=8, task_name='mscoco')
 12/17/2022 19:47:47 - INFO - __main__ - Seed number: 8
+12/23/2022 10:32:48 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.5, gpu=0, model_name='openai/clip-vit-base-patch32', num_samples=128, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.5/seed_8', seed=8, task_name='mscoco')
+12/23/2022 10:32:48 - INFO - __main__ - Seed number: 8
+12/23/2022 10:43:36 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.5, gpu=0, model_name='openai/clip-vit-base-patch32', num_samples=128, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.5/seed_8', seed=8, task_name='mscoco')
+12/23/2022 10:43:36 - INFO - __main__ - Seed number: 8
+12/23/2022 10:45:32 - INFO - __main__ - Pruned Model MAC: 50.00 %
+12/23/2022 10:55:13 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.5, gpu=0, model_name='openai/clip-vit-base-patch32', num_samples=128, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.5/seed_8', seed=8, task_name='mscoco')
+12/23/2022 10:55:13 - INFO - __main__ - Seed number: 8
+12/23/2022 10:56:06 - INFO - __main__ - Pruned Model MAC: 50.00 %
+12/23/2022 14:53:07 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.5, gpu=0, model_name='openai/clip-vit-base-patch32', num_samples=128, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.5/seed_8', seed=8, task_name='mscoco')
+12/23/2022 14:53:07 - INFO - __main__ - Seed number: 8
+12/23/2022 14:54:02 - INFO - __main__ - Pruned Model MAC: 50.00 %
+12/23/2022 14:55:06 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.5, gpu=0, model_name='openai/clip-vit-base-patch32', num_samples=128, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.5/seed_8', seed=8, task_name='mscoco')
+12/23/2022 14:55:06 - INFO - __main__ - Seed number: 8
+12/23/2022 14:56:53 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.5, gpu=0, model_name='openai/clip-vit-base-patch32', num_samples=128, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.5/seed_8', seed=8, task_name='mscoco')
+12/23/2022 14:56:53 - INFO - __main__ - Seed number: 8
+12/23/2022 14:57:42 - INFO - __main__ - Pruned Model MAC: 50.00 %
+12/23/2022 15:14:07 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.5, gpu=0, model_name='openai/clip-vit-base-patch32', num_samples=128, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.5/seed_8', seed=8, task_name='mscoco')
+12/23/2022 15:14:07 - INFO - __main__ - Seed number: 8
+12/23/2022 15:14:17 - INFO - __main__ - Namespace(ckpt_dir='ckpt', constraint=0.5, gpu=0, model_name='openai/clip-vit-base-patch32', num_samples=128, output_dir='outputs/openai/clip-vit-base-patch32/mscoco/0.5/seed_8', seed=8, task_name='mscoco')
+12/23/2022 15:14:17 - INFO - __main__ - Seed number: 8
+12/23/2022 15:15:08 - INFO - __main__ - Pruned Model MAC: 50.00 %

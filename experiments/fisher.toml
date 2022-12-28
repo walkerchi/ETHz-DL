@@ -16,4 +16,4 @@ model_str = 'openai/clip-vit-large-patch14'
 
 [models.0.kwargs]
 model_str = 'openai/clip-vit-base-patch32'
-pruning_version = 'vitB32_pruned_0.75_751.pt'
+pruning_version = 'vitB32_pruned_0.65_652.pt'

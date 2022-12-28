@@ -45,7 +45,6 @@ def get_mha_lstsq(
 
     model.eval()
     for teacher_batch, student_batch in zip(teacher_inputs, student_inputs):
-        attention_mask = (teacher_batch[1] == 0)
         student_batch[2] = student_head_mask[layer_idx]# .view(1, -1, 1, 1)
 
         # Get the outputs of the teacher model
@@ -58,8 +57,8 @@ def get_mha_lstsq(
 
         # Get the outputs of the student model
         with MaskNeurons(model, student_neuron_mask):
-            layer(student_batch[0], None, None, head_mask = student_batch[2])
-        hidden_states, = inputs.pop(0) # removed , input_tensor
+            layer(student_batch[0], None, None, head_mask=student_batch[2])
+        hidden_states, = inputs.pop(0)  # removed , input_tensor
         # input_tensor = remove_padding(input_tensor, attention_mask)
 
         # hidden_states = hidden_states.view(-1, num_attention_heads, attention_head_size)
@@ -74,7 +73,7 @@ def get_mha_lstsq(
 
         A = outputs_per_head.t()
         A = torch.cat([A, torch.ones(A.shape[0], 1, device=device)], dim=1)
-        B = teacher_output - mha_proj.bias  - student_batch[0] #input_tensor
+        B = teacher_output - mha_proj.bias - student_batch[0]  # input_tensor
         B = B.flatten()
         ATA += A.t() @ A
         ATB += A.t() @ B
@@ -116,11 +115,10 @@ def get_ffn_lstsq(
 
     model.eval()
     for teacher_batch, student_batch in zip(teacher_inputs, student_inputs):
-        attention_mask = (teacher_batch[1] == 0)
         student_batch[2] = student_head_mask[layer_idx] # .view(1, -1, 1, 1)
 
         # Get the outputs of the teacher model
-        teacher_output, = layer(teacher_batch[0], None, None, head_mask=None)#teacher_batch[2])
+        teacher_output, = layer(teacher_batch[0], None, None, head_mask=None)
         inputs.pop(0)
         residuals.pop(0)
         if cls_only:
@@ -128,6 +126,7 @@ def get_ffn_lstsq(
 
         # Get the outputs of the student model
         with MaskNeurons(model, student_neuron_mask):
+            breakpoint()
             lo = layer(student_batch[0], None, None, head_mask=student_batch[2])
         hidden_states, = inputs.pop(0) # removed , input_tensor
         residual, = residuals.pop(0)

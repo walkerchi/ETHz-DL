@@ -3,10 +3,8 @@ import pathlib
 from PIL import Image
 import time
 import torch
-import torchvision
 from transformers import CLIPProcessor, CLIPModel, CLIPTokenizer
 from torch.utils.data import DataLoader, Dataset
-from matplotlib import pyplot as plt
 
 
 CAPS_PATH = pathlib.Path(__file__).parent.resolve() / "annotations_trainval2017" / \
