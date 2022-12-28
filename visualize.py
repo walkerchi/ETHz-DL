@@ -3,6 +3,7 @@ import re
 import numpy as np
 import logging
 import toml
+import matplotlib
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from typing import List, Optional, Union
@@ -10,6 +11,17 @@ from config import Config
 from run import Task
 
 MARKERS = [".","v","1","s","p","*","+","x","d"]
+
+matplotlib.use("pgf")
+matplotlib.rcParams.update({
+    "pgf.texsystem": "pdflatex",
+    'font.family': 'serif',
+    # 'font.serif': ['Palatino'],
+    'text.usetex': True,
+    'pgf.rcfonts': False,
+})
+plt.rcParams['font.size'] = '9'
+plt.rcParams['figure.figsize'] = (3.5, 2.5)
 
 def load_speedup_log(config):
     """It will try to match all the file under the config.filename logging folder,
@@ -32,13 +44,6 @@ def load_speedup_log(config):
     for file in os.listdir(path):
         with open(os.path.join(path, file), "r") as f:
             content = f.read()
-            results = re.findall("^.*base\smodel",content,flags=re.DOTALL) # find the toml configuration in the log file, which will endswith `base model`
-            if len(results) != 1:
-                continue
-            configuration = results[0].replace("base model", "")
-            configuration = toml.loads(configuration)
-            if configuration != toml.loads(toml.dumps(config.to_dict())): # toml.loads(toml.dumps()) to eliminate the `None`
-                continue
             results = re.findall("speed up:\d+\.\d+\(\d+.\d+\)", content) # it looks like `speed up:1.22
             if len(results) != 1:
                 continue
@@ -68,14 +73,6 @@ def load_topk_log(config:Config):
     for file in os.listdir(path):
         with open(os.path.join(path, file), "r") as f:
             content = f.read()
-            results = re.findall("^.*Building\sindex", content,flags=re.DOTALL) # find the toml configuration in the log file, which will endswith `Building index`
-            if len(results) != 1:
-                continue
-            configuration = results[0].replace("Building index", "")
-            configuration = toml.loads(configuration)
-            if configuration != toml.loads(toml.dumps(config.to_dict())): # toml.loads(toml.dumps()) to eliminate the `None`
-                continue
-
             topk_scores = []
             for k in config.topk:
                 results = re.findall(f"top{k}:\d+\.\d+", content)  # it looks like `top3:0.02`
@@ -107,14 +104,13 @@ def plot_flip():
         Configuration Here,
         TODO: add argparse later
     """
-    ps   = np.arange(0.1, 1.0, 0.1).round(1)  # you must do round, or it will cause something like 3.00000000000001, because of the IEEE754 float
-    topk = [1, 3, 5]
+    ps   = np.arange(0, 1.1, 0.1).round(1)  # you must do round, or it will cause something like 3.00000000000001, because of the IEEE754 float
+    topk = [1, 5, 10]
     topm = [50]
     f    = 0.1
     dataset   = "MSCOCO"
-    n_samples = 100
     layout    = "image-caption[0]"
-    model_str = "openai/clip-vit-base-patch32"
+    model_str = "openai/clip-vit-base-patch16"
 
 
     l_speedup    = []
@@ -129,20 +125,22 @@ def plot_flip():
         """
         print(f"\n\np:{p} ({i+1}/{len(ps)})")
         config = Config({
+                "batch_size": 32,
                 "dataset":  {
                     "name":dataset,
                     "kwargs":{
-                        "n_samples":n_samples,
+                        "n_samples":128,
                         "layout":layout
                     }
                 },
                 "models"    :{
-                    "name":["HuggingFaceFLIP","HuggingFaceCLIP"],
+                    "name":["HuggingFaceFLIP","HuggingFaceFLIP"],
                     "0":{"kwargs":{
                             "p":p,
                             "model_str":model_str
                         }},
                     "1":{"kwargs":{
+                            "p":1-p,
                             "model_str":model_str
                         }}
                 },
@@ -150,6 +148,7 @@ def plot_flip():
                 "filename"  : f"{name}_{p}_speedup",
                 "experiment":"speedup",
                 "n_reps"    :3,
+                "do_warmup_rep"    : True,
                 "f"         :f,
                 "device"    :"cpu",
                 "base_model":{
@@ -168,7 +167,8 @@ def plot_flip():
         else:
             print("Load Directly")
         l_speedup.append(speedup)
-        
+
+    for i,p in enumerate(ps):
         """
             Topk Experiment
             try:
@@ -178,10 +178,10 @@ def plot_flip():
         """
         print("\nCalculate Topk...")
         config = Config({
+                "batch_size": 32,
                 "dataset":  {
                     "name":dataset,
                     "kwargs":{
-                        "n_samples":n_samples,
                         "layout":layout
                     }
                 },
@@ -208,6 +208,7 @@ def plot_flip():
         else:
             print("Load Directly")
         l_topk_score.append(topk_score)
+
     speedup = np.array(l_speedup) # [len(fs), 2]
     topk_score    = np.stack(l_topk_score)  # [len(fs), len(topk)]
 
@@ -215,10 +216,10 @@ def plot_flip():
         Calculate the baseline for topk
     """
     config = Config({
+                    "batch_size": 32,
                     "dataset":  {
                         "name":dataset,
                         "kwargs":{
-                            "n_samples":n_samples,
                             "layout":layout
                         }
                     },
@@ -241,29 +242,51 @@ def plot_flip():
     """
         Do the plotting
     """
-    fig, ax = plt.subplots(figsize=(12,8))  # change the figure size and dpi here
-    cmap    = plt.cm.Accent                 # change the color map here
-    for i, k in enumerate(topk):            # plot topk
-        ax.plot(ps, topk_score[:, i], color=cmap(i), label=f"top{k}")
-        ax.scatter(ps, topk_score[:, i], c=[cmap(i) for _ in ps], marker=MARKERS[i])
-        ax.axhline(y=base_topk_score[i], color=cmap(i), label=f"baseline(top{k})", linestyle=":")
-    ax_ = ax.twinx()
-    ax_.plot(ps, speedup[:, 0], color=cmap(len(topk)+1), label="speedup")  # plot speedup
-    ax_.fill_between(ps, speedup[:,0]-speedup[:,1], speedup[:,0]+speedup[:,1], alpha=0.3, color=plt.cm.Accent(len(topk)+1)) # this is the uncertainty for speedup
-    ax.set_xlabel("p")
-    ax.set_ylabel("topk")
-    ax_.set_ylabel("speedup(1x)")
-    ax_.axhline(y=1.0, color="purple", label="baseline(speedup)", linestyle="-.")
-    fig.legend(loc="upper left")
-    ax.spines['top'].set_visible(False)
-    ax_.spines['top'].set_visible(False)
-    ax.set_title("FLIP speed up and topk to p")
+    import pandas as pd
+    import seaborn as sns
+    df = pd.DataFrame({"Masked input in \%": ps * 100,
+                    "Top-1": topk_score[:, 0] * 100, 
+                    "Top-5": topk_score[:, 1] * 100,
+                    "Top-10": topk_score[:, 2] * 100})
+    df = df.melt('Masked input in \%', var_name=' ', value_name='Accuracy in \%')
+    sns.set_style("darkgrid")
+    sns.lineplot(data=df, x="Masked input in \%", y="Accuracy in \%", hue=' ', marker='o', markersize=2, legend=False)
+    sns.despine()
+    
+    ax = plt.gca()
+    ax.spines['bottom'].set_visible(True)
+    ax.set_ylabel("Accuracy in \%", loc="top", rotation="horizontal")
+    ax.yaxis.set_label_coords(0.30,1.02)
+    yts = [0,10,20,30,40,50,60,70]
+    ax.set_yticks(yts)
+    ax.set_yticklabels([str(yt) for yt in yts])
+    ax.set_ylim(bottom=0)
+    ax.set_xlim(left=-1)
+    ax_ = plt.twinx()
+    ax_.plot(ps* 100, speedup[:, 0], color='brown', label="Speedup", marker='o', markersize=2, markeredgecolor=(1, 1, 1, 1))  # plot speedup
+    ax_.fill_between(ps*100, speedup[:,0]-speedup[:,1], speedup[:,0]+speedup[:,1], alpha=0.3, color='brown') # this is the uncertainty for speedup
+    ax_.set_ylabel("Speedup", loc="top", rotation="horizontal")
+    ax_.yaxis.set_label_coords(1,1.10)
+    ax_.set_yscale('log', base=2)
+    ax_.set_ylim(bottom=1, top=2**3.5)
+    ax_.set_yticks([1,2,4,8,])
+    ax_.set_yticklabels(['1','2','4','8'])
+    ax_.grid(None)
+    ax_.spines['bottom'].set_visible(True)
+    ax_.spines['bottom'].set_linewidth(1.5)
+    ax_.spines['bottom'].set_color('black')
+    ax.tick_params(bottom="on")
+    ax.tick_params(axis='x', direction='out')
+    ax.xaxis.tick_bottom()
+    ax.text(10,10,'Speedup')
+    ax.text(10,32,'Top-1')
+    ax.text(10,49,'Top-5')
+    ax.text(10,60,'Top-10')
     path = "./visualization"
     if not os.path.exists(path):
         os.mkdir(path)
-    fig.savefig(os.path.join(path, f"{name}.pdf")) # pdf for the overleaf
-    fig.savefig(os.path.join(path, f"{name}.png")) # png for the preview
-    plt.show()
+    plt.tight_layout()
+    plt.savefig(os.path.join(path, f"{name}.pgf")) # pdf for the overleaf
 
 if __name__ == "__main__":
     plot_flip()
