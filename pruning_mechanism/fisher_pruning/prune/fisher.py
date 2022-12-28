@@ -4,6 +4,8 @@ from utils.arch import apply_neuron_mask
 
 
 def collect_mask_grads(model, head_mask, neuron_mask, dataloader, device):
+    """Runs the model with full masks on the whole dataset and
+    calculates and returns the gradients of the masks."""
     head_mask.requires_grad_(True)
     neuron_mask.requires_grad_(True)
 
@@ -12,13 +14,10 @@ def collect_mask_grads(model, head_mask, neuron_mask, dataloader, device):
     head_grads = []
     neuron_grads = []
     for batch in tqdm(dataloader):
-        #for k, v in batch.items():
-            #batch[k] = v.to("cpu", non_blocking=True)
         batch[0]['pixel_values'] = torch.squeeze(batch[0]['pixel_values']).to(device)
         outputs = model.get_image_features(**batch[0], head_mask=head_mask)
-        # loss = outputs.loss
-        l = model.get_loss(outputs, batch[1].squeeze().to(device))
-        l.backward()
+        loss = model.get_loss(outputs, batch[1].squeeze().to(device))
+        loss.backward()
 
         head_grads.append(head_mask.grad.detach())
         head_mask.grad = None
@@ -37,5 +36,6 @@ def collect_mask_grads(model, head_mask, neuron_mask, dataloader, device):
 
 @torch.no_grad()
 def compute_fisher_info(grads):
+    """Returns the diagonal opproximation of the Fisher Information Matrix. """
     fisher_info = grads.pow(2).sum(dim=0)
     return fisher_info

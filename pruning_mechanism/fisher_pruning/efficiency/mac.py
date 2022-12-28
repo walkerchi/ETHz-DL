@@ -1,10 +1,9 @@
-
-
 def mac_per_head(
     seq_len,
     hidden_size,
     attention_head_size,
 ):
+    """Computes the number of multiplications per Attention head. """
     per_head_qkv = lambda seq_len: 3 * seq_len * hidden_size * attention_head_size
     per_head_attn = lambda seq_len: 2 * seq_len * seq_len * attention_head_size
     per_head_output = lambda seq_len: seq_len * attention_head_size * hidden_size
@@ -13,6 +12,8 @@ def mac_per_head(
 
 
 def mac_per_neuron(seq_len, hidden_size):
+    """Computes the number of multiplications per neuron
+    in the MLP following the MHA block. """
     return 2 * seq_len * hidden_size
 
 
@@ -23,6 +24,7 @@ def compute_mac(
     hidden_size,
     attention_head_size,
 ):
+    """Computes the number of multiplications of a transformer. """
     mac = 0.0
     for num_heads, num_neurons in zip(num_heads_per_layer, num_neurons_per_layer):
         attention_mac = num_heads * mac_per_head(seq_len, hidden_size, attention_head_size)
@@ -32,6 +34,7 @@ def compute_mac(
 
 
 def compute_mask_mac(head_mask, neuron_mask, seq_len, hidden_size):
+    """Computes the number of multiplications of a pruned transformer. """
     num_hidden_layers = head_mask.shape[0]
     num_attention_heads = head_mask.shape[1]
     intermediate_size = neuron_mask.shape[1]

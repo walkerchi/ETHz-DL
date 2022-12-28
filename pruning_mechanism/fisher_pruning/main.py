@@ -27,14 +27,13 @@ parser.add_argument("--model_name", type=str,
 parser.add_argument("--task_name", type=str, default='mscoco', choices=[
     "mscoco",
 ])
-parser.add_argument("--ckpt_dir", type=str, default='ckpt')
 parser.add_argument("--output_dir", type=str, default=None)
-parser.add_argument("--gpu", type=int, default=0)
+parser.add_argument("--gpu", type=int, default=1)
 
-parser.add_argument("--constraint", type=float, default=0.5,
+parser.add_argument("--constraint", type=float, default=0.65,
                     help="MAC constraint relative to the original model")
-parser.add_argument("--num_samples", type=int, default=128)
-parser.add_argument("--seed", type=int, default=8)
+parser.add_argument("--num_samples", type=int, default=1024)
+parser.add_argument("--seed", type=int, default=1234)
 
 
 def main():
@@ -52,7 +51,6 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     device = torch.device('cpu')
     if args.gpu != 0:
-        # os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
         if torch.cuda.is_available():
             device = torch.device('cuda')
 
@@ -68,7 +66,7 @@ def main():
     )
     logger.info(args)
 
-    # Set a GPU and the experiment seed
+    # Set the experiment seed
     set_seed(args.seed)
     logger.info(f"Seed number: {args.seed}")
 
@@ -78,7 +76,7 @@ def main():
 
     # Load the training dataset
     if args.task_name == 'mscoco':
-        training_dataset = MSCOCO(2048, args.model_name)
+        training_dataset = MSCOCO(8192, args.model_name)
     else:
         raise NotImplementedError
 
@@ -86,27 +84,28 @@ def main():
     sample_dataset = Subset(
         training_dataset,
         np.random.choice(len(training_dataset), args.num_samples).tolist())
+
     sample_batch_size = 32
     sample_dataloader = DataLoader(
         sample_dataset,
         batch_size=sample_batch_size,
-        # collate_fn=collate_fn,
         shuffle=False,
         pin_memory=True,
     )
 
     # Prepare the model
-    model = model.to(device)  # cuda()
+    model = model.to(device)
     model.eval()
     for param in model.parameters():
         param.requires_grad_(False)
+    # initialize the masks
     full_head_mask = torch.ones(config.num_hidden_layers,
                                 config.num_attention_heads).to(device)
     full_neuron_mask = torch.ones(config.num_hidden_layers,
                                   config.intermediate_size).to(device)
 
     start = time.time()
-    # Search the optimal mask
+    # Get the gradients for the masks, while the model is frozen
     head_grads, neuron_grads = collect_mask_grads(
         model,
         full_head_mask,
@@ -114,22 +113,21 @@ def main():
         sample_dataloader,
         device
     )
-    neuron_scale_factor = 1
-
+    # Find the head and neuron masks with the highest fisher value
+    # that satisfy the FLOP constraint
     head_mask, neuron_mask = search_mac(
         config,
         head_grads,
-        neuron_grads*neuron_scale_factor,
+        neuron_grads,
         seq_len,
         args.constraint,
         device
     )
-    print('Nonzero headmask and neuron mask percentage: ',
-          head_mask.count_nonzero()/head_mask.numel(),
-          neuron_mask.count_nonzero()/neuron_mask.numel())
+    # Log the calculated FLOP reduction
     pruned_mac, orig_mac = compute_mask_mac(head_mask, neuron_mask,
                                             seq_len, config.hidden_size)
     logger.info(f"Pruned Model MAC: {pruned_mac / orig_mac * 100.0:.2f} %")
+
     # Rearrange the mask
     head_mask = rearrange_mask(head_mask, head_grads)
     neuron_mask = rearrange_mask(neuron_mask, neuron_grads)
@@ -151,6 +149,11 @@ def main():
     end = time.time()
     logger.info(f"{args.task_name} Pruning time (s): {end - start}")
 
+    # Save the masks
+    torch.save(head_mask, os.path.join(args.output_dir, "head_mask.pt"))
+    torch.save(neuron_mask, os.path.join(args.output_dir, "neuron_mask.pt"))
+
+    # Evaluate the results with a small test
     test_dataset = Subset(
         training_dataset,
         np.random.choice(len(training_dataset), 64).tolist(),
@@ -162,11 +165,6 @@ def main():
         shuffle=False,
         pin_memory=True,
     )
-    # Save the masks
-    torch.save(head_mask, os.path.join(args.output_dir, "head_mask.pt"))
-    torch.save(neuron_mask, os.path.join(args.output_dir, "neuron_mask.pt"))
-
-    # Evaluate the accuracy
     losses = test_model(model, head_mask, neuron_mask, test_dataloader, device)
     logger.info(f"Losses for head mask only: {losses[0]}")
     logger.info(f"Losses for neuron mask only: {losses[1]}")

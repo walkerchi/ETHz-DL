@@ -43,6 +43,7 @@ def prune_all_but_one(
     head_mask = head_mask.view(num_hidden_layers, num_attention_heads)
     return head_mask
 
+
 @torch.no_grad()
 def search_mac(
     config,

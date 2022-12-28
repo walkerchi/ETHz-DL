@@ -1,4 +1,3 @@
-import numpy as np
 import time
 import torch
 from torch.utils.data import DataLoader
@@ -68,8 +67,10 @@ if __name__ == '__main__':
     restriction = '0.6'
     seed = 604
     save_path = f'pruned_models/vitB32_pruned_{restriction}_{seed}.pt'
-    head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt', map_location=torch.device('cpu'))
-    neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt', map_location=torch.device('cpu'))
+    head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt',
+                           map_location=torch.device('cpu'))
+    neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt',
+                             map_location=torch.device('cpu'))
     pruned_model = CLIPModel_p.from_pretrained(model_name)
     tokenizer = CLIPProcessor.from_pretrained(model_name)
 
