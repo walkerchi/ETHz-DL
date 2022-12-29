@@ -2,6 +2,7 @@ dataset.name    = 'MSCOCO'
 models.name     = ['OpenAICLIP', 'OpenAICLIP']
 base_model.name = ['OpenAICLIP']
 base_model.topm = []
+topm = [50]
 seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cpu'
