@@ -108,7 +108,7 @@ class Config:
                     the random seed
         logging_level:str, default `INFO`
                     the logging level argument for logging module
-        device:     str, default `cpu` if nvidia-gpu is not avaiable else `gpu`
+        device:     str, default `cpu` if nvidia-gpu is not avaiable else `cuda:0`
                     the runtime device for each CLIP, the result will be default in `cpu`
         batch_size: Optional[int], default None
                     the runtime batch_size for images encoding.
@@ -154,7 +154,7 @@ class Config:
         self.dataset = DatasetConfig(config['dataset'])
         self.models  = ModelsConfig(config['models'], self.device, self.cache_type)
         
-        assert self.device in ["cpu", "cuda"]
+        assert self.device in ["cpu", "cuda:0"]
         assert self.cache_type in ["sparse", "dense"]
         assert self.experiment in ["topk", "speedup", "distill"]
         assert self.topm is None or isinstance(self.topm, list), f"`topm` in configure file should be list of int or `None`, but got {self.topm}"
