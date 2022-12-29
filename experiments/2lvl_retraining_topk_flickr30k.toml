@@ -1,4 +1,4 @@
-dataset.name    = 'MSCOCO'
+dataset.name    = 'Flickr30'
 models.name     = ['HuggingFaceCLIP', 'HuggingFaceCLIP']
 topk            = [1, 5, 10]
 topm            = [50]

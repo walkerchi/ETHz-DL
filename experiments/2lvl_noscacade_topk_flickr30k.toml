@@ -1,5 +1,5 @@
-dataset.name    = 'MSCOCO'
-models.name     = ['HuggingFaceCLIP', 'HuggingFaceCLIP']
+dataset.name    = 'Flickr30'
+models.name     = ['HuggingFaceCLIP'']
 topk            = [1, 5, 10]
 topm            = [50]
 seed            = 123456789
@@ -13,7 +13,4 @@ experiment      = "topk"
 layout    = 'image-caption[0]'
 
 [models.0.kwargs]
-model_str = "openai/clip-vit-base-patch32"
-
-[models.1.kwargs]
 model_str = "openai/clip-vit-base-patch16"
