@@ -1,5 +1,5 @@
 dataset.name    = 'Flickr30'
-models.name     = ['HuggingFaceCLIP'']
+models.name     = ['HuggingFaceCLIP']
 topk            = [1, 5, 10]
 topm            = [50]
 seed            = 123456789
