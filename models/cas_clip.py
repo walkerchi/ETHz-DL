@@ -30,7 +30,10 @@ class CasCLIP(nn.Module):
         return len(self.models)
 
     def build(self, images:List[PILImage], batch_size:Optional[int]=None, verbose:bool=True):
+<<<<<<< HEAD
         # breakpoint()
+=======
+>>>>>>> origin/main
         self.images             = images
         self.base_images_emb    = self.models[0].encode_images(images, batch_size=batch_size, verbose=verbose)
         self.cache_images_emb   = {}
