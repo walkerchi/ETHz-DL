@@ -2,6 +2,7 @@
 dataset.name    = 'MSCOCO'
 models.name     = ['HuggingFaceFLIP', 'HuggingFaceFLIP']
 base_model.name = ['HuggingFaceCLIP']
+base_model.topm = []
 seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cpu'

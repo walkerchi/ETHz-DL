@@ -155,7 +155,8 @@ def plot_flip():
                     "name":["HuggingFaceCLIP"],
                     "0":{"kwargs":{
                         "model_str":model_str
-                    }}
+                    }},
+                    "topm": []
                 }
         }, init_logging=False)
         success, speedup = load_speedup_log(config)
