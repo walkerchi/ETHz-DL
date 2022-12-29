@@ -55,8 +55,15 @@ class HuggingFaceImageEncoder(nn.Module):
     def preprocess(self, images: List[PILImage]):
         return self.preprocess(images=images, return_tensors="pt")
 
+    @property
+    def dtype(self):
+        return next(iter(self.parameters())).dtype
+    @property
+    def device(self):
+        return next(iter(self.parameters())).device
+
     def forward(self, pixel_values: torch.Tensor):
-        x = self.vision_model(pixel_values=pixel_values)
+        x = self.vision_model(pixel_values=pixel_values.type(self.dtype).to(self.device))
         x = x[1]
         x = self.visual_projection(x)
 
@@ -78,6 +85,7 @@ class HuggingFaceTextEncoder(nn.Module):
     def preprocess(self, texts: List[str]):
         texts = ["a photo of" + text for text in texts]
         return self.tokenizer(texts, padding=True, return_tensors="pt")
+
 
     def _build_causal_attention_mask(self, bsz, seq_len, dtype):
         # lazily create causal attention mask, with full attention between the vision tokens
@@ -123,6 +131,9 @@ class HuggingFaceCLIP(nn.Module):
         self.model_str = model_str
         self.no_grad = True
 
+    def to(self,device):
+        self.image_encoder.to(device)
+        return self
     @property
     def image_encoder_str(self):
         return f"HuggingFaceCLIP<{self.model_str}>.ImageEncoder"

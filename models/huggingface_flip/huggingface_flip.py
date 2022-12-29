@@ -34,19 +34,26 @@ class MAEImageEncoder(nn.Module):
     def preprocess(self, images: List[PILImage]):
         return self.processor(images=images, return_tensors="pt")["pixel_values"]
 
+    @property
+    def dtype(self):
+        return next(iter(self.parameters())).dtype
+    @property
+    def device(self):
+        return next(iter(self.parameters())).device
+
     def forward(self, x: torch.Tensor):
         """
             x:      torch.FloatTensor[B,C,H,W]
         """
         B = x.shape[0]
+        x = x.type(self.dtype).to(self.device)
         x = self.patch_embed(x)  # [n_batch, n_hid, n_grid, n_grid]
         x = x.flatten(2)  # [n_batch, n_hid, n_grid**2]
         x = x.transpose(1, 2)  # [n_batch, n_grid**2, n_hid]
         m = torch.randperm(x.shape[1]) < int(self.p*x.shape[1])
         x = x[:, m]
         x = torch.cat([self.class_embed.expand(B, 1, -1), x], dim=1)
-        x += self.position_embed(torch.cat([torch.where(m)
-                                 [0], torch.tensor([self.num_patches])])[None, :])
+        x += self.position_embed(torch.cat([torch.where(m)[0], torch.tensor([self.num_patches])])[None, :].to(self.device))
 
         x = self.pre_layernorm(x)
         x = self.encoder(inputs_embeds=x)

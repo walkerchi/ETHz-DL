@@ -80,7 +80,7 @@ class MSCOCO:
     @property
     def images(self):
         imgs = []
-        breakpoint()
+        # breakpoint()
         for image in self._images:
             img = Image.open(image)
             img.load()
