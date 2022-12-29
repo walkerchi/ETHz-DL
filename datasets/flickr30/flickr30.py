@@ -40,7 +40,7 @@ class Flickr30:
         df = pd.read_csv(cap_path, sep="\|\s")
 
         if layout == "caption":
-            if n_samples is not None:
+            if n_samples is None:
                 images   = df['image_name'].tolist()   
                 captions = df['comment'].tolist()
             else:
