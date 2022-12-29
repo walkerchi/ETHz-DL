@@ -10,7 +10,7 @@ cache_type      = "dense"
 experiment      = "topk"
 
 [dataset.kwargs]
-layout    = 'caption'
+layout    = 'image-caption[0]'
 
 [models.0.kwargs]
 model_str = "ViT-B/16"
