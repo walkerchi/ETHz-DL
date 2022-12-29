@@ -10,7 +10,6 @@ cache_type      = "dense"
 experiment      = "topk"
 
 [dataset.kwargs]
-n_samples = 60
 layout    = 'image-caption[0]'
 
 [models.0.kwargs]
