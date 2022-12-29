@@ -64,8 +64,8 @@ if __name__ == '__main__':
     # Set parameters and load model
     model_name = 'openai/clip-vit-base-patch32'
     base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/'
-    restriction = '0.6'
-    seed = 604
+    restriction = '0.65'
+    seed = 123
     save_path = f'pruned_models/vitB32_pruned_{restriction}_{seed}.pt'
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt',
                            map_location=torch.device('cpu'))

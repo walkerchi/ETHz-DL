@@ -16,7 +16,7 @@ def random_mask_like(mask):
 
     return rand_mask
 
-
+@torch.no_grad()
 def get_losses(model, head_mask, neuron_mask, dataloader, device):
     """ returns the losses of a given pruned model compared to
     its unpruned version."""
@@ -26,6 +26,7 @@ def get_losses(model, head_mask, neuron_mask, dataloader, device):
     losses = []
     if neuron_mask is not None:
         handles = apply_neuron_mask(model.vision_model, neuron_mask)
+
     for batch in tqdm(dataloader):
         batch[0]['pixel_values'] = torch.squeeze(batch[0]['pixel_values']).to(device)
         outputs = model.get_image_features(**batch[0], head_mask=head_mask)

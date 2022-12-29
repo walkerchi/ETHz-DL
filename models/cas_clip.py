@@ -1,7 +1,7 @@
 import numpy as np
-import torch 
-import torch.nn as nn 
-import torch.nn.functional as F 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 from typing import List,Optional
 from PIL.ImageFile import ImageFile as PILImage
 import logging
@@ -30,6 +30,7 @@ class CasCLIP(nn.Module):
         return len(self.models)
 
     def build(self, images:List[PILImage], batch_size:Optional[int]=None, verbose:bool=True):
+        breakpoint()
         self.images             = images
         self.base_images_emb    = self.models[0].encode_images(images, batch_size=batch_size, verbose=verbose)
         self.cache_images_emb   = {}
@@ -43,8 +44,8 @@ class CasCLIP(nn.Module):
                 index:  int
                         index of the layer
                 text:   str
-                        text for encoding 
-        
+                        text for encoding
+
             Returns
             -------
                 torch.FloatTensor[n_emb]
@@ -66,8 +67,8 @@ class CasCLIP(nn.Module):
                 index:  int
                         index of the layer
                 images_index: List[int] | torch.LongTensor
-                        images index for encoding 
-        
+                        images index for encoding
+
             Returns
             -------
                 torch.FloatTensor[n_image, n_emb]
@@ -127,13 +128,13 @@ class CasCLIP(nn.Module):
         assert n_candidates[0]   <= len(self.images),f"topm number should be less than total images number, got topm number {n_candidates[0]}, and  {len(self.images)}"
         assert len(n_candidates) == len(self), f"Expected number of models equal to the len(topm)+1, but got {len(self)} and {len(n_candidates)}({n_candidates[:-1]})"
         self.cache_text_emb = {}
-        
+
         candidate = None # if `None` means select all, else should be torch.LongTensor of 1-dim (global index)
         for i, n_candidate in enumerate(n_candidates):
 
             # compute text embedding
             text_emb = self.get_text_embed(i, text)
-        
+
             # compute images embedding
             images_emb = self.get_images_embed(i, candidate)
 
@@ -143,7 +144,7 @@ class CasCLIP(nn.Module):
                 candidate = scores.topk(n_candidate).indices.flatten()
             else:
                 candidate = candidate[scores.topk(n_candidate).indices.flatten()]
-           
+
         return candidate
 
 
