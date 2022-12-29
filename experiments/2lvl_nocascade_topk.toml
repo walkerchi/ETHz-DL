@@ -1,7 +1,7 @@
 dataset.name    = 'MSCOCO'
 models.name     = ['HuggingFaceCLIP']
 topk            = [1, 5, 10]
-topm            = [50]
+topm            = []
 seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cuda:0'
