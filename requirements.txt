@@ -6,3 +6,4 @@ transformers
 seaborn
 toml
 ftfy
+scipy
