@@ -17,7 +17,7 @@ from ..huggingface_flip import HuggingFaceTextEncoder
 
 CACHE_DIR = os.path.join(os.path.dirname(
     os.path.dirname(os.path.dirname(__file__))), ".cache")
-DISTILL_DIR = os.path.join(CACHE_DIR, "distill")
+DISTILL_DIR = os.path.join(os.path.dirname(__file__),"weight")
 
 
 class Squeeze(nn.Module):
