@@ -126,7 +126,7 @@ class Task:
         teacher = model.models[1].image_encoder
         assert hasattr(student, "distill")
         logger.info(f"Distilling...")
-        student.distill(teacher, dataset.images, batch_size=config.batch_size,
+        student.distill(teacher, dataset._images, batch_size=config.batch_size,
                         device=config.device, verbose=True, logger=logger)
         logger.info(f"Distill Finished")
 

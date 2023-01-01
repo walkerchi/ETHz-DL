@@ -6,6 +6,7 @@ import torchvision
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
+from PIL import Image
 from tqdm import tqdm
 from typing import List, Optional
 from transformers import CLIPProcessor
@@ -40,7 +41,7 @@ class DistillImageEncoder(nn.Module):
         self.n_layers = n_layers
 
         # save old environment
-        torch_home = os.environ["TORCH_HOME"] if "TORCH_HOME" is os.environ else None
+        torch_home = os.environ["TORCH_HOME"] if "TORCH_HOME" in os.environ else None
         # change the downloading path
         os.environ["TORCH_HOME"] = cache_dir
 
@@ -105,6 +106,7 @@ class DistillImageEncoder(nn.Module):
         """
             x:      torch.FloatTensor[B,C,H,W]
         """
+        x = x.type(self.dtype)
         with torch.no_grad():
             x = self.net(x)
         x = self.projection(x)
@@ -119,15 +121,41 @@ class DistillImageEncoder(nn.Module):
     def load(self, path: str = DISTILL_DIR):
         path = os.path.join(path, self.filename)
         if not os.path.exists(path):
+            print(f"path:{path}")
             raise FileNotFoundError(
                 "Weight File not exist, You should distill it first to have the weight")
         self.projection.load_state_dict(torch.load(path))
         return self
 
-    def distill(self, teacher: nn.Module, images: List[PILImage], batch_size: Optional[int], device: str = "cpu", verbose: bool = True, logger=logging):
+    @property
+    def dtype(self):
+        return next(iter(self.parameters())).dtype
 
-        if batch_size is not None:
-            images = DataLoader(self.preprocess(images), batch_size=batch_size)
+    @property
+    def device(self):
+        return next(iter(self.parameters())).device
+
+    def distill(self, teacher: nn.Module, images_path: List[str], batch_size: Optional[int], device: str = "cpu", verbose: bool = True, logger=logging):
+
+        class ImageLoader(DataLoader):
+            def __init__(self, images_path:List[str],processor,batch_size=batch_size):
+                super().__init__(images_path, batch_size=batch_size, collate_fn=self.collate_fn)
+                self.processor = processor
+            def collate_fn(self, images_path:List[str]):
+                images = []
+                for image_path in images_path:
+                    image = Image.open(image_path)
+                    image.load()
+                    images.append(image)
+                images = self.processor(images=images, return_tensors="pt")["pixel_values"]
+                return images
+                    
+        if batch_size is None:
+            images = [Image.open(image_path) for image_path in images_path]
+            images = self.preprocess(images)
+        else:
+            images = ImageLoader(images_path, self.processor, batch_size=batch_size)
+            # images = DataLoader(images_path,self.processor, batch_size=batch_size)
 
         teacher.eval()
         self.train()
@@ -173,7 +201,7 @@ class HuggingFaceDistillCLIP(HuggingFaceCLIP):
     def __init__(self, model_str: str, cache_dir: str = CACHE_DIR, net: str = "mobilenet_v3_small", **kwargs):
         super(HuggingFaceCLIP, self).__init__()
         self.image_encoder = DistillImageEncoder(
-            model_str, net=net, cache_dir=cache_dir, **kwargs)
+            model_str=model_str, net=net, cache_dir=cache_dir, **kwargs)
         self.text_encoder = HuggingFaceTextEncoder(model_str, cache_dir)
         self.model_str = model_str
 
