@@ -40,7 +40,7 @@ class Flickr30:
         df = pd.read_csv(cap_path, sep="\|\s")
 
         if layout == "caption":
-            if n_samples is None:
+            if n_samples is not None:
                 images   = df['image_name'].tolist()   
                 captions = df['comment'].tolist()
             else:
@@ -53,8 +53,6 @@ class Flickr30:
             for image, group in df.groupby('image_name'):
                 images.append(image)
                 captions.append(group['comment'].iloc[caption_index])
-                if n_samples is not None and len(images) >= n_samples:
-                    break
         self._images   = [os.path.join(image_path, image) for image in images]
         self._captions = captions
 

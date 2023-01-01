@@ -1,5 +1,6 @@
+# 2 level cascade
 dataset.name    = 'MSCOCO'
-models.name     = ['OpenAICLIP', 'OpenAICLIP']
+models.name     = ['OpenAIFLIP', 'OpenAICLIP']
 base_model.name = ['OpenAICLIP']
 base_model.topm = []
 seed            = 123456789
@@ -7,7 +8,7 @@ logging_level   = 'INFO'
 device          = 'cpu'
 batch_size      = 32
 experiment      = "speedup"
-n_reps          = 3
+n_reps          = 1
 f               = 0.1
 
 [dataset.kwargs]
@@ -15,7 +16,8 @@ n_samples       = 1024  # only need sufficiently many samples to get accurate ti
 layout    = 'caption'
 
 [models.0.kwargs]
-model_str = "ViT-B/16"
+p         = 0.5
+model_str = "ViT-B/32"
 
 [models.1.kwargs]
 model_str = "ViT-B/32"

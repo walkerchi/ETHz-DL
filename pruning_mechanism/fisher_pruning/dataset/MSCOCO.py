@@ -7,8 +7,8 @@ from torch.utils.data import Dataset
 
 CAPS_PATH = pathlib.Path(__file__).parent.resolve() / \
     "annotations_trainval2017" / \
-    "annotations" / "captions_train2017.json"
-IMGS_DIR = pathlib.Path(__file__).parent.resolve() / "train2017"
+    "annotations" / "captions_val2017.json"
+IMGS_DIR = pathlib.Path(__file__).parent.resolve() / "val2017"
 
 
 class MSCOCO(Dataset):

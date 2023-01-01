@@ -1,13 +1,12 @@
 # 2 level cascade
 dataset.name    = 'MSCOCO'
-models.name     = ['HuggingFaceFLIP', 'HuggingFaceFLIP']
+models.name     = ['HuggingFaceDistillCLIP', 'HuggingFaceCLIP']
+topm            = [50]
 base_model.name = ['HuggingFaceCLIP']
-base_model.topm = []
-topm = [50]
 seed            = 123456789
 logging_level   = 'INFO'
 device          = 'cpu'
-batch_size      = 32
+batch_size      = 8
 experiment      = "speedup"
 n_reps          = 3
 do_warmup_rep   = true
@@ -18,11 +17,9 @@ n_samples       = 128   # only need sufficiently many samples to get accurate ti
 layout    = 'image-caption[0]'
 
 [models.0.kwargs]
-p         = 0.5
 model_str = "openai/clip-vit-base-patch16"
 
 [models.1.kwargs]
-p         = 0.5
 model_str = "openai/clip-vit-base-patch16"
 
 [base_model.0.kwargs]
