@@ -14,12 +14,11 @@ experiment      = "topk"
 layout    = 'image-caption[0]'
 
 [models.0.kwargs]
-model_str = 'openai/clip-vit-base-patch16'
+model_str = 'openai/clip-vit-base-patch32'
 
 [models.1.kwargs]
-model_str = 'openai/clip-vit-base-patch32'
-pruning_version = 'vitB32_pruned_0.65_123.pt'
+model_str = 'openai/clip-vit-base-patch16'
+pruning_version = 'vitB16_pruned_0.4_6.pt'
 
 [base_model.0.kwargs]
-model_str = 'openai/clip-vit-base-patch32'
-
+model_str = 'openai/clip-vit-base-patch16'
