@@ -11,8 +11,7 @@ cache_type      = "dense"
 experiment      = "topk"
 
 [dataset.kwargs]
-n_samples = 1000
-layout    = 'caption'
+layout    = 'image-caption[0]'
 
 [models.0.kwargs]
 model_str = 'openai/clip-vit-base-patch16'

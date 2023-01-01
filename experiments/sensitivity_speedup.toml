@@ -14,15 +14,15 @@ n_reps          = 3
 f               = 0.1
 
 [dataset.kwargs]
-n_samples = 1000
-layout    = 'caption'
+n_samples = 128
+layout    = 'image-caption[0]'
 
 [models.0.kwargs]
 model_str = 'openai/clip-vit-base-patch16'
 
 [models.1.kwargs]
 model_str = 'openai/clip-vit-base-patch32'
-pruning_version = 'vitB32_pruned_0.65_652.pt'
+pruning_version = 'vitB32_pruned_0.65_123.pt'
 
 [base_model.0.kwargs]
 model_str = 'openai/clip-vit-base-patch32'
