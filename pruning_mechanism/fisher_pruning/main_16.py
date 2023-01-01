@@ -14,9 +14,8 @@ from transformers import (
 from modeling_clip import CLIPModel as CLIPModel_pruned
 from dataset.MSCOCO import MSCOCO
 from efficiency.mac import compute_mask_mac
-from efficiency.latency import estimate_latency
 from prune.fisher import collect_mask_grads
-from prune.search import search_mac, search_latency, prune_all_but_one
+from prune.search import search_mac, prune_all_but_one
 from prune.rearrange import rearrange_mask
 from prune.rescale import rescale_mask
 from evaluate.eval import test_model
@@ -44,7 +43,7 @@ parser.add_argument("--mha_lut", type=str, default=None)
 parser.add_argument("--ffn_lut", type=str, default=None)
 parser.add_argument("--num_samples", type=int, default=128)
 parser.add_argument("--seed", type=int, default=8)
-parser.add_argument("--min_accuracy, type=float", default=0.8)
+parser.add_argument("--min_accuracy", type=float, default=0.8)
 
 
 def main():
@@ -130,8 +129,10 @@ def main():
 
     # Retrieve original model accuracy
     unpruned_losses = test_model(model, head_mask, neuron_mask, test_dataloader, device)
-
+    stop = False
     for i in range(config.num_hidden_layers):
+        if stop:
+            break
 
         start = time.time()
         # Search the optimal mask
@@ -140,6 +141,7 @@ def main():
             head_mask,
             neuron_mask,
             sample_dataloader,
+            device
         )
 
         head_mask = prune_all_but_one(
@@ -176,8 +178,11 @@ def main():
         logger.info(f"Losses for random binary masks with same number of zeros: {losses[3]}")
         # Save the masks
         torch.save(head_mask, os.path.join(args.output_dir, "head_mask_{}.pt".format(i)))
-        if torch.any(losses < (args.min_accuracy * unpruned_losses)):
-            break
+
+        for i in range(len(losses)):
+            for j in range(len(losses[i])):
+                if (1-losses[i][j]) < args.min_accuracy * (1-unpruned_losses[i][j]):
+                    stop = False
 
 
 if __name__ == "__main__":
