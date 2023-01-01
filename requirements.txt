@@ -4,3 +4,6 @@ torch
 torchvision
 transformers
 seaborn
+toml
+ftfy
+scipy

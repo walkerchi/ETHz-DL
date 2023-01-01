@@ -5,7 +5,7 @@ topk = [1, 5, 10]
 topm = [50, 25]
 seed            = 123456789
 logging_level   = 'INFO'
-device          = 'cpu'
+device          = 'cuda:0'
 batch_size      = 32
 experiment      = "topk"
 

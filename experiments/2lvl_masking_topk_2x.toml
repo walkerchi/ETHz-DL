@@ -1,16 +1,20 @@
 dataset.name    = 'MSCOCO'
-models.name     = ['OpenAICLIP']
+models.name     = ['HuggingFaceFLIP', 'HuggingFaceCLIP']
 topk            = [1, 5, 10]
 topm            = [50]
 seed            = 123456789
 logging_level   = 'INFO'
-device          = 'cpu'
+device          = 'cuda:0'
 batch_size      = 32
 cache_type      = "dense"
 experiment      = "topk"
 
 [dataset.kwargs]
-layout    = 'caption'
+layout    = 'image-caption[0]'
 
 [models.0.kwargs]
-model_str = "ViT-B/32"
+p         = 0.5
+model_str = "openai/clip-vit-base-patch16"
+
+[models.1.kwargs]
+model_str = "openai/clip-vit-base-patch16"

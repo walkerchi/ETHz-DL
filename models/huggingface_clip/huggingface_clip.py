@@ -269,6 +269,8 @@ class HuggingFaceCLIP(nn.Module):
         emb_texts = []
 
         for text in texts:
+            text['input_ids'] = text['input_ids'][:, :77]
+            text['attention_mask'] = text['attention_mask'][:, :77]
             if self.no_grad:
                 with torch.no_grad():
                     emb_batch = self.encode_text(**text)
