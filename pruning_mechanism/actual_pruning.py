@@ -62,11 +62,11 @@ def prune_lin_layer_before(fc, mask, hidden_size, rescale=False):
 
 if __name__ == '__main__':
     # Set parameters and load model
-    model_name = 'openai/clip-vit-base-patch32'
-    base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/'
-    restriction = '0.65'
-    seed = 123
-    save_path = f'pruned_models/vitB32_pruned_{restriction}_{seed}.pt'
+    model_name = 'openai/clip-vit-base-patch16'
+    base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch16/mscoco/'
+    restriction = '0.4'
+    seed = 1234
+    save_path = f'pruned_models/vitB16_pruned_{restriction}_{seed}.pt'
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt',
                            map_location=torch.device('cpu'))
     neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt',
@@ -76,6 +76,7 @@ if __name__ == '__main__':
 
     # prune the model
     pruned_model = prune(pruned_model, head_mask, neuron_mask)
+    torch.save(pruned_model, save_path)
 
     # verify wether the outputs are the same (besides rounding error)
     unpruned_model = CLIPModel_unpruned.from_pretrained(model_name)
