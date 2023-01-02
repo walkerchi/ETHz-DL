@@ -1,5 +1,5 @@
 dataset.name    = 'MSCOCO'
-models.name     = ['HuggingFaceCLIP','HuggingFacePrunedCLIP']
+models.name     = ['HuggingFacePrunedCLIP','HuggingFaceCLIP']
 base_model.name = ['HuggingFaceCLIP']
 topk            = [1, 5, 10]
 topm            = [50]
@@ -11,16 +11,13 @@ cache_type      = "dense"
 experiment      = "topk"
 
 [dataset.kwargs]
-n_samples = 1000
-layout    = 'caption'
+layout    = 'image-caption[0]'
 
 [models.0.kwargs]
 model_str = 'openai/clip-vit-base-patch16'
+pruning_version = 'vitB16_pruned_0.4_1234.pt'
 
 [models.1.kwargs]
-model_str = 'openai/clip-vit-base-patch32'
-pruning_version = 'vitB32_pruned_0.65_652.pt'
+model_str = 'openai/clip-vit-base-patch16'
 
-[base_model.0.kwargs]
-model_str = 'openai/clip-vit-base-patch32'
 
