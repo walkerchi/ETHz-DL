@@ -73,9 +73,11 @@ The previous command logs results to `.log/<EXPERIMENT>/<time-of-execution>.log`
 
 First, make sure that you satisfy all prerequisites in Section *Prerequisites*.
 
+The pruned models can be downloaded at https://polybox.ethz.ch/index.php/s/1N8tNyRPRlRZDAq .
+
 ### Table 1
 
-*you could also change the device setting to `cuda:0` and increase the `batch_size` in the corresponding .toml file to accelerate the evalutation* 
+*you could also change the device setting to `cuda:0` and increase the `batch_size` in the corresponding .toml file to accelerate the evalutation*
 
 The result will be printed in the console and also in the corresponding log file.
 
