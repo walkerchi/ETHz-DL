@@ -58,6 +58,7 @@ class HuggingFaceImageEncoder(nn.Module):
     @property
     def dtype(self):
         return next(iter(self.parameters())).dtype
+
     @property
     def device(self):
         return next(iter(self.parameters())).device
@@ -85,7 +86,6 @@ class HuggingFaceTextEncoder(nn.Module):
     def preprocess(self, texts: List[str]):
         texts = ["a photo of" + text for text in texts]
         return self.tokenizer(texts, padding=True, return_tensors="pt")
-
 
     def _build_causal_attention_mask(self, bsz, seq_len, dtype):
         # lazily create causal attention mask, with full attention between the vision tokens
@@ -125,15 +125,17 @@ class HuggingFaceCLIP(nn.Module):
             model_str, cache_dir=cache_dir)
         self.processor = CLIPProcessor.from_pretrained(
             model_str, cache_dir=cache_dir)
-        # self.model           = CLIPModel.from_pretrained(model_str, cache_dir=cache_dir)
-        self.image_encoder = HuggingFaceImageEncoder(model_str, cache_dir)
-        self.text_encoder = HuggingFaceTextEncoder(model_str, cache_dir)
+        self.model = CLIPModel.from_pretrained(model_str, cache_dir=cache_dir)
+        # self.image_encoder = HuggingFaceImageEncoder(model_str, cache_dir)
+        # self.text_encoder = HuggingFaceTextEncoder(model_str, cache_dir)
         self.model_str = model_str
         self.no_grad = True
 
-    def to(self,device):
-        self.image_encoder.to(device)
+    def to(self, device):
+        # self.image_encoder.to(device)
+        # self.model.to(device)
         return self
+
     @property
     def image_encoder_str(self):
         return f"HuggingFaceCLIP<{self.model_str}>.ImageEncoder"
@@ -154,14 +156,15 @@ class HuggingFaceCLIP(nn.Module):
         return self.tokenizer(texts, padding=True, return_tensors="pt")
 
     def encode_image(self, image: torch.Tensor):
-        # return self.model.get_image_features(pixel_values=image)
-        return self.image_encoder(image)
+        return self.model.get_image_features(pixel_values=image)
+        # return self.image_encoder(image)
 
     def encode_text(self, input_ids: torch.Tensor, attention_mask: torch.TensorType):
-        # return self.model.get_text_features(input_ids=input_ids, attention_mask=attention_mask)
-        return self.text_encoder(input_ids, attention_mask)
+        return self.model.get_text_features(input_ids=input_ids, attention_mask=attention_mask)
+        # return self.text_encoder(input_ids, attention_mask)
 
-    def encode_images(self, images: Union[List[PILImage], PILImage], batch_size: Optional[int] = None, device: str = 'cpu', verbose: bool = False, return_timing: bool = False) -> torch.Tensor:
+    def encode_images(self, images: Union[List[PILImage], PILImage], batch_size: Optional[int] = None,
+                      device: str = 'cpu', verbose: bool = False, return_timing: bool = False) -> torch.Tensor:
         """
             Parameters
             ----------
@@ -230,7 +233,8 @@ class HuggingFaceCLIP(nn.Module):
         else:
             return emb_images
 
-    def encode_texts(self, texts: Union[List[str], str], batch_size: Optional[int] = None, device: str = 'cpu', verbose: bool = False, return_timing: bool = False) -> torch.Tensor:
+    def encode_texts(self, texts: Union[List[str], str], batch_size: Optional[int] = None, device: str = 'cpu',
+                     verbose: bool = False, return_timing: bool = False) -> torch.Tensor:
         """
             Parameters
             ----------
