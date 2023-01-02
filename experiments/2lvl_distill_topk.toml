@@ -13,8 +13,7 @@ layout    = 'image-caption[0]'
 
 [models.0.kwargs]
 model_str = "openai/clip-vit-base-patch16"
-epoch     = 3
-lr        = 1e-3
+net       = "resnet34"
 
 [models.1.kwargs]
 model_str = "openai/clip-vit-base-patch16"
