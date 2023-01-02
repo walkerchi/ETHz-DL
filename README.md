@@ -119,9 +119,13 @@ First, make sure that you satisfy all prerequisites in Section *Prerequisites*.
   python run.py --name 2lvl_flip_speedup_3x # for the speedup experiment
   ```
 
-### Figure <>
+### Figure 3
 
-Figure <>
+````bash
+python visualize.py
+````
+
+
 
 
 
