@@ -77,6 +77,8 @@ First, make sure that you satisfy all prerequisites in Section *Prerequisites*.
 
 *you could also change the device setting to `cuda:0` and increase the `batch_size` in the corresponding .toml file to accelerate the evalutation* 
 
+The result will be printed in the console and also in the corresponding log file.
+
 - Distillation(MobileNetV3-S)
 
   ```bash
@@ -125,9 +127,7 @@ First, make sure that you satisfy all prerequisites in Section *Prerequisites*.
 python visualize.py
 ````
 
-
-
-
+The output image will be the `visualization/visualization_huggingface_flip.(pgf/png)`
 
 ### Customize Distillation
 
