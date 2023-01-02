@@ -10,7 +10,7 @@ batch_size      = 32
 cache_type      = "dense"
 experiment      = "speedup"
 do_warmup_rep   = true
-n_reps          = 3
+n_reps          = 10
 f               = 0.1
 
 [dataset.kwargs]
@@ -19,7 +19,7 @@ layout    = 'image-caption[0]'
 
 [models.0.kwargs]
 model_str = 'openai/clip-vit-base-patch16'
-pruning_version = 'vitB16_pruned_0.4_6.pt'
+pruning_version = 'vitB16_pruned_132.pt'
 
 [models.1.kwargs]
 model_str = 'openai/clip-vit-base-patch16'

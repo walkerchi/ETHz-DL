@@ -15,10 +15,8 @@ layout    = 'image-caption[0]'
 
 [models.0.kwargs]
 model_str = 'openai/clip-vit-base-patch16'
-pruning_version = 'vitB16_pruned_0.4_6.pt'
+pruning_version = 'vitB16_pruned_0.pt'
 
 [models.1.kwargs]
 model_str = 'openai/clip-vit-base-patch16'
 
-[base_model.0.kwargs]
-model_str = 'openai/clip-vit-base-patch16'
