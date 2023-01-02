@@ -120,7 +120,35 @@ The result will be printed in the console and also in the corresponding log file
   python run.py --name 2lvl_flip_topk_3x # for the topk experiment
   python run.py --name 2lvl_flip_speedup_3x # for the speedup experiment
   ```
+  
+- Sensitivity(22 heads pruned)
 
+  ```bash
+  python run.py --name 2lvl_sensitivity_topk_22 # for the topk experiment
+  python run.py --name 2lvl_sensitivity_speedup_22 # for the speedup experiment
+  ```
+  
+- Sensitivity(77 heads pruned)
+
+  ```bash
+  python run.py --name 2lvl_sensitivity_topk_77 # for the topk experiment
+  python run.py --name 2lvl_sensitivity_speedup_77 # for the speedup experiment
+  ```
+    
+- Sensitivity(132 heads pruned)
+
+  ```bash
+  python run.py --name 2lvl_sensitivity_topk_132 # for the topk experiment
+  python run.py --name 2lvl_sensitivity_speedup_132 # for the speedup experiment
+  ```
+    
+- Fisher(mag_constraint = 0.8)
+
+  ```bash
+  python run.py --name 2lvl_fisher_topk # for the topk experiment
+  python run.py --name 22lvl_fisher_speedup # for the speedup experiment
+  ```
+  
 ### Figure 3
 
 ````bash
