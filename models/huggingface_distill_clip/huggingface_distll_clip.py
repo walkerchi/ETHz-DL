@@ -22,7 +22,10 @@ DISTILL_DIR = os.path.join(os.path.dirname(__file__),"weight")
 
 class Squeeze(nn.Module):
     def forward(self, x):
-        return torch.squeeze(x)
+        if x.shape[0] == 1:
+            return torch.squeeze(x)[None, :]
+        else:
+            return torch.squeeze(x)
 
 
 class DistillImageEncoder(nn.Module):
@@ -48,18 +51,22 @@ class DistillImageEncoder(nn.Module):
         if net == "mobilenet_v3_small":
             net = torchvision.models.mobilenet_v3_small(pretrained=True)
             self.net = nn.Sequential(net.features, net.avgpool, Squeeze())
-            n_dim = 576
+            # n_dim = 576
         elif net == "mobilenet_v3_large":
             net = torchvision.models.mobilenet_v3_large(pretrained=True)
             self.net = nn.Sequential(net.features, net.avgpool, Squeeze())
-            n_dim = 960
-        elif net == "resnet_18":
-            net = torchvision.models.resnet18(pretrained=True)
+            # n_dim = 960
+        elif net.startswith("resnet"):
+            net = getattr(torchvision.models,net)(pretrained=True)
             self.net = nn.Sequential(net.conv1, net.bn1, net.relu, net.maxpool,
                                      net.layer1, net.layer2, net.layer3, net.layer4, net.avgpool, Squeeze())
-            n_dim = 512
+            # n_dim = 512
         else:
             raise Exception(f"{net} is currently not supported")
+
+        x = torch.rand(1, 3, 224, 224)
+        out_shape = self.net(x).shape
+        n_dim = out_shape[-1]
 
         if torch_home is None:           # restore the environment
             os.environ.pop("TORCH_HOME")
