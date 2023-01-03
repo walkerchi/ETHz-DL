@@ -6,3 +6,6 @@ transformers
 seaborn
 toml
 ftfy
+scipy
+toml
+matplotlib

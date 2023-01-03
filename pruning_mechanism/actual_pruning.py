@@ -77,6 +77,7 @@ if __name__ == '__main__':
 
     # prune the model
     pruned_model = prune(pruned_model, head_mask, neuron_mask)
+    torch.save(pruned_model, save_path)
 
     torch.save(pruned_model, save_path)
 
