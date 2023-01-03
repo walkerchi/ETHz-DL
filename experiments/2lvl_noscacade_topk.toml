@@ -1,0 +1,16 @@
+dataset.name    = 'MSCOCO'
+models.name     = ['OpenAICLIP']
+topk            = [1, 5, 10]
+topm            = [50]
+seed            = 123456789
+logging_level   = 'INFO'
+device          = 'cpu'
+batch_size      = 32
+cache_type      = "dense"
+experiment      = "topk"
+
+[dataset.kwargs]
+layout    = 'caption'
+
+[models.0.kwargs]
+model_str = "ViT-B/32"

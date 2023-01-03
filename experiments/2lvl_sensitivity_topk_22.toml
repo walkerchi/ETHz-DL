@@ -1,0 +1,22 @@
+dataset.name    = 'MSCOCO'
+models.name     = ['HuggingFacePrunedCLIP','HuggingFaceCLIP']
+base_model.name = ['HuggingFaceCLIP']
+topk            = [1, 5, 10]
+topm            = [50]
+seed            = 123456789
+logging_level   = 'INFO'
+device          = 'cpu'
+batch_size      = 32
+cache_type      = "dense"
+experiment      = "topk"
+
+[dataset.kwargs]
+layout    = 'image-caption[0]'
+
+[models.0.kwargs]
+model_str = 'openai/clip-vit-base-patch16'
+pruning_version = 'vitB16_pruned_22.pt'
+
+[models.1.kwargs]
+model_str = 'openai/clip-vit-base-patch16'
+
