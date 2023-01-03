@@ -1,3 +1,7 @@
+"""
+This script is intended as a preliminary test for a pruning version
+and to experiment with vatiotions of it.
+"""
 import os
 import numpy as np
 import torch
@@ -22,8 +26,8 @@ if __name__ == "__main__":
     config = model.config.vision_config
     # load masks
     base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch16/mscoco/'
-    restriction = '0.4'
-    seed = 1234
+    restriction = '0.65'
+    seed = 0
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt',
                            map_location=torch.device('cpu'))
     neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt',
@@ -44,17 +48,16 @@ if __name__ == "__main__":
         shuffle=False,
         pin_memory=True,
     )
-    # l1 = get_losses(model, head_mask, neuron_mask, test_dataloader,
-                    # torch.device('cpu'))
-    # l2 = get_losses(model, head_mask != 0, neuron_mask, test_dataloader,
-                    # torch.device('cpu'))
+
+    # Test the model in different variations.
     losses = test_model(model, head_mask, neuron_mask, test_dataloader,
                         torch.device('cpu'))
     print('Head mask only losses:', *['{:.3e}'.format(l.item()) for l in losses[0]])
     print('Neuron mask only losses:', *['{:.3e}'.format(l.item()) for l in losses[1]])
     print('Both masks losses:', *['{:.3e}'.format(l.item()) for l in losses[2]])
     print('Both binary mask losses:', *['{:.3e}'.format(l.item()) for l in losses[3]])
-    print('Average loss for both mask:', sum(losses[2])/len(losses[2]))
+    print('Average loss for both masks:', sum(losses[2])/len(losses[2]))
+    # Test a the model without rescaled head mask
     losses_b = test_model(model, head_mask != 0, neuron_mask, test_dataloader,
                           torch.device('cpu'))
     print('Now for binary masks: ')
@@ -62,4 +65,4 @@ if __name__ == "__main__":
     print('Neuron mask only losses:', *['{:.3e}'.format(l.item()) for l in losses_b[1]])
     print('Both masks losses:', *['{:.3e}'.format(l.item()) for l in losses_b[2]])
     print('Both binary mask losses:', *['{:.3e}'.format(l.item()) for l in losses_b[3]])
-    print('Average loss for both mask:', sum(losses_b[2])/len(losses_b[2]))
+    print('Average loss for both masks:', sum(losses_b[2])/len(losses_b[2]))

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_name", type=str,
-                    default='openai/clip-vit-base-patch32')
+                    default='openai/clip-vit-base-patch16')
 parser.add_argument("--task_name", type=str, default='mscoco', choices=[
     "mscoco",
 ])
@@ -38,7 +38,7 @@ parser.add_argument("--seed", type=int, default=1234)
 
 def main():
     args = parser.parse_args()
-    seq_len = 50
+    seq_len = 197
     # Create the output directory
     if args.output_dir is None:
         args.output_dir = os.path.join(

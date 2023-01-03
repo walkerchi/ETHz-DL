@@ -144,11 +144,12 @@ The result will be printed in the console and also in the corresponding log file
   python run.py --name 2lvl_sensitivity_speedup_132 # for the speedup experiment
   ```
     
-- Fisher(mag_constraint = 0.8)
+- Fisher(mac_constraint = 0.65)
 
   ```bash
+  python pruning_mechanism/actual_pruning.py
   python run.py --name 2lvl_fisher_topk # for the topk experiment
-  python run.py --name 22lvl_fisher_speedup # for the speedup experiment
+  python run.py --name 2lvl_fisher_speedup # for the speedup experiment
   ```
   
 ### Figure 3
