@@ -1,0 +1,1 @@
+python3: can't open file '/cluster/home/largraf/DeepLearning_project/ETHz-DeepLearning-Project/fisher_pruning/outputs/openai/clip-vit-base-patch16/mscoco/0.75/seed_1234/main.py': [Errno 2] No such file or directory
