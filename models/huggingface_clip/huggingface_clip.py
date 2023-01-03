@@ -133,7 +133,7 @@ class HuggingFaceCLIP(nn.Module):
 
     def to(self, device):
         # self.image_encoder.to(device)
-        # self.model.to(device)
+        self.model.to(device)
         return self
 
     @property
@@ -188,7 +188,7 @@ class HuggingFaceCLIP(nn.Module):
             Returns
             -------
                 if return_timing is `True`, will return a float number which is the process time
-                else return the emb_images which is 
+                else return the emb_images which is
                 emb_images: torch.FloatTensor[n_image, n_emb] or [e_emb]
                             the embedding of the encoded images
                             the device should be in cpu, no matter what the device for the encoder

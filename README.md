@@ -147,7 +147,9 @@ The result will be printed in the console and also in the corresponding log file
 - Fisher(mac_constraint = 0.65)
 
   ```bash
-  python pruning_mechanism/actual_pruning.py
+  cd pruning_mechanism
+  python actual_pruning.py
+  cd ..
   python run.py --name 2lvl_fisher_topk # for the topk experiment
   python run.py --name 2lvl_fisher_speedup # for the speedup experiment
   ```
