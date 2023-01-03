@@ -128,14 +128,12 @@ class HuggingFaceCLIP(nn.Module):
         self.model = CLIPModel.from_pretrained(model_str, cache_dir=cache_dir)
         # self.image_encoder = HuggingFaceImageEncoder(model_str, cache_dir)
         # self.text_encoder = HuggingFaceTextEncoder(model_str, cache_dir)
-        self.device = 'cpu'
         self.model_str = model_str
         self.no_grad = True
 
     def to(self, device):
         # self.image_encoder.to(device)
         self.model.to(device)
-        self.device = device
         return self
 
     @property
@@ -158,11 +156,11 @@ class HuggingFaceCLIP(nn.Module):
         return self.tokenizer(texts, padding=True, return_tensors="pt")
 
     def encode_image(self, image: torch.Tensor):
-        return self.model.get_image_features(pixel_values=image.to(device=self.device))
+        return self.model.get_image_features(pixel_values=image)
         # return self.image_encoder(image)
 
     def encode_text(self, input_ids: torch.Tensor, attention_mask: torch.TensorType):
-        return self.model.get_text_features(input_ids=input_ids.to(self.device), attention_mask=attention_mask.to(self.device))
+        return self.model.get_text_features(input_ids=input_ids, attention_mask=attention_mask)
         # return self.text_encoder(input_ids, attention_mask)
 
     def encode_images(self, images: Union[List[PILImage], PILImage], batch_size: Optional[int] = None,
@@ -190,7 +188,7 @@ class HuggingFaceCLIP(nn.Module):
             Returns
             -------
                 if return_timing is `True`, will return a float number which is the process time
-                else return the emb_images which is 
+                else return the emb_images which is
                 emb_images: torch.FloatTensor[n_image, n_emb] or [e_emb]
                             the embedding of the encoded images
                             the device should be in cpu, no matter what the device for the encoder
