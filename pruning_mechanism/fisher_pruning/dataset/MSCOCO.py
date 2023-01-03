@@ -25,7 +25,7 @@ class MSCOCO(Dataset):
             j = json.load(f)
         self.model_og = CLIPModel.from_pretrained(name)
         self.processor = CLIPProcessor.from_pretrained(name)
-        self.tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
+        self.tokenizer = CLIPTokenizer.from_pretrained(name)
         self.samples = [(x["image_id"], x["caption"]) for x in j['annotations']]
         self.samples = self.samples[offset:offset+self.n_samples]
         self.captions = [x[1] for x in self.samples]
