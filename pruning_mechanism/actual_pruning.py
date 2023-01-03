@@ -73,9 +73,12 @@ if __name__ == '__main__':
                              map_location=torch.device('cpu'))
     pruned_model = CLIPModel_p.from_pretrained(model_name)
     tokenizer = CLIPProcessor.from_pretrained(model_name)
+    breakpoint()
 
     # prune the model
     pruned_model = prune(pruned_model, head_mask, neuron_mask)
+    torch.save(pruned_model, save_path)
+
     torch.save(pruned_model, save_path)
 
     # verify wether the outputs are the same (besides rounding error)

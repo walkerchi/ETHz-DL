@@ -16,14 +16,14 @@ from fisher_pruning.evaluate.eval import test_model, get_losses
 
 if __name__ == "__main__":
     # load model
-    model_name = 'openai/clip-vit-base-patch32'
+    model_name = 'openai/clip-vit-base-patch16'
     model = CLIPModel_pruned.from_pretrained(model_name)
     tokenizer = CLIPProcessor.from_pretrained(model_name)
     config = model.config.vision_config
     # load masks
-    base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/'
-    restriction = '0.65'
-    seed = 123
+    base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch16/mscoco/'
+    restriction = '0.4'
+    seed = 1234
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt',
                            map_location=torch.device('cpu'))
     neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt',
