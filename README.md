@@ -92,7 +92,7 @@ The result will be printed in the console and also in the corresponding log file
 
   ```bash
   python run.py --name 2lvl_distill_topk_mobilenetv3-L # for the topk experiment
-  python run.py --name 2lvl_distill_speedup_mobilenetv3-L # for the speedup experiment
+  python run.py --name 2lvl_distill_speedup_mobilenetv3-L # for the speedup experimennt
   ```
 
 - Distillation(ResNet34)
@@ -186,7 +186,9 @@ The output image will be the `visualization/visualization_huggingface_flip.(pgf/
   pyton run.py --name distilling_resnet50
   ```
 
-  
+### Costumize Fisher Pruning
+
+Follow the instructions from pruning_mechanism/README.md.
 
 ## Layout
 

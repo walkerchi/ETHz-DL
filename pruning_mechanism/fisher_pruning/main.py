@@ -32,8 +32,8 @@ parser.add_argument("--gpu", type=int, default=1)
 
 parser.add_argument("--constraint", type=float, default=0.65,
                     help="MAC constraint relative to the original model")
-parser.add_argument("--num_samples", type=int, default=1024)
-parser.add_argument("--seed", type=int, default=1234)
+parser.add_argument("--num_samples", type=int, default=8192)
+parser.add_argument("--seed", type=int, default=0)
 
 
 def main():

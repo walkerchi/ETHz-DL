@@ -24,38 +24,31 @@ The Python requirements from ../requirements.txt are sufficient to run the code 
 
 ## 2. Running the Algorithm 
 
-To run the pruning mechanism on the Model 'openai/clip-vit-base-patch32' and the mscoco task run:
+To run the pruning mechanism on the Model 'openai/clip-vit-base-patch16' and the mscoco task run:
 
 ### 2.1 Generating the masks
 ```bash
 cd fisher_pruning
-python3 main.py --num_samples 8192 --constraint 0.65 --seed 123
+python3 main.py --num_samples 8192 --constraint 0.65 --seed 0
 ```
 
-This will use 2048 samples from mscoco and try to reduce the FLOP constraint to 70%.
+This will use 8192 samples from mscoco and try to reduce the FLOP constraint to 65%.
 The calculations are based on a constant number of patches.
-The resulting head and neuron masks will be stored in fisher_pruning/outputs/openai/clip-vit-base-patch32/mscoco/mac/0.7/seed_5/.
-Note: The constraint is only a broad estimate, because the number of image patches is variable in the MSCOCO dataset.
+The resulting head and neuron masks will be stored in fisher_pruning/outputs/openai/clip-vit-base-patch16/mscoco/0.65/seed_0/.
 
-### 2.2  
+### 2.2 Create the pruned model 
 
-The method from above only generated a pruning mask. 
+The method from above only generated the pruning masks. 
 To apply the mask and remove all unnecessary weights from the model:
 1. open actual_pruning.py.
-2. Change the variables "restriction" and "seed" on line 67 and 68 accordingly.
+2. Change the variables "restriction" and "seed" on line 67 and 68 according to the masks you want to use.
 3. run the file
 This generates the pruned model and saves it to the folder pruned_models/ with name vitB32_pruned_"restriction"_"seed".pt.
-The pruned model can then be copied to the folder ../models/huggingface_pruned_clip/pruned_models/.
-There it can be used as part of an experiment in the main project.
+The pruned model can be used as part of an experiment in the main project,
+if the pruning name in the experiment toml file is adjusted to the file name of the model.
 
 ## 3. Reproducing the results from the paper of this main project
 
-To reproduce the results, follow the instructions above, with the exact same settings (8192 samples, constraint 0.65 and seed 123).
-Note: Running this code will overwrite the original output.
+To reproduce the results, follow the instructions above, with the exact same settings (8192 samples, constraint 0.65 and seed 0).
+Note: Running this code will overwrite the original output files.
 
-
- **reference**
-
-> 1.Andrew,  H, Mark S, Searching for MobileNetV3,, ICCV 2019
->
-> 2.Alec Radford, Jong Wook K, Learning Transferable Visual Models From Natural Language Supervision, RMLR2021
