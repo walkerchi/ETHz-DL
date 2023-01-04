@@ -75,8 +75,9 @@ def main():
     config = model.config.vision_config
 
     # Load the training dataset
+    n_load = args.num_samples if args.num_samples > 128 else 128
     if args.task_name == 'mscoco':
-        training_dataset = MSCOCO(8192, args.model_name)
+        training_dataset = MSCOCO(n_load, args.model_name)
     else:
         raise NotImplementedError
 

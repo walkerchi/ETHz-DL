@@ -1,0 +1,4 @@
+01/03/2023 13:25:49 - INFO - __main__ - Namespace(model_name='openai/clip-vit-base-patch16', task_name='mscoco', ckpt_dir='ckpt', output_dir='outputs/openai/clip-vit-base-patch16/mscoco/0.7/seed_0', gpu=1, constraint=0.7, num_samples=8192, seed=0)
+01/03/2023 13:25:49 - INFO - __main__ - Seed number: 0
+01/03/2023 14:16:11 - INFO - __main__ - Pruned Model MAC: 70.00 %
+01/03/2023 16:29:25 - INFO - __main__ - mscoco Pruning time (s): 10292.830956935883
