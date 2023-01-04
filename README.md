@@ -188,7 +188,7 @@ The output image will be the [`visualization/visualization_huggingface_flip.(pgf
   pyton run.py --name distilling_resnet50
   ```
 
-### Costumize Fisher Pruning
+### Custumize Fisher Pruning
 
 Follow the [instructions](pruning_mechanism/README.md) from pruning_mechanism/README.md.
 
@@ -214,11 +214,11 @@ Follow the [instructions](pruning_mechanism/README.md) from pruning_mechanism/RE
   </p>
 </details>  
 
-- **pruning_mechanism**: codes about pruning
+**pruning_mechanism**: codes about pruning
 
-- *run.py*: main execution file
+*run.py*: main execution file
 
-- *config.py*: Basic Configuration for experiement, models and dataset
+*config.py*: Basic Configuration for experiement, models and dataset
 
-- *visualize.py* : Visualization for the casCLIP(Masking) performance
+*visualize.py* : Visualization for the casCLIP(Masking) performance
 
