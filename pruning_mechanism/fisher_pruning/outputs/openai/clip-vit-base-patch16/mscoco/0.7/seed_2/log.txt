@@ -1,0 +1,2 @@
+01/04/2023 16:29:10 - INFO - __main__ - Namespace(model_name='openai/clip-vit-base-patch16', task_name='mscoco', output_dir='outputs/openai/clip-vit-base-patch16/mscoco/0.7/seed_2', gpu=1, constraint=0.7, num_samples=8192, seed=2)
+01/04/2023 16:29:10 - INFO - __main__ - Seed number: 2
