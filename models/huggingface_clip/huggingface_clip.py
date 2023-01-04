@@ -126,6 +126,7 @@ class HuggingFaceCLIP(nn.Module):
         self.processor = CLIPProcessor.from_pretrained(
             model_str, cache_dir=cache_dir)
         self.model = CLIPModel.from_pretrained(model_str, cache_dir=cache_dir)
+        device = 'cpu'
         # self.image_encoder = HuggingFaceImageEncoder(model_str, cache_dir)
         # self.text_encoder = HuggingFaceTextEncoder(model_str, cache_dir)
         self.model_str = model_str
@@ -134,6 +135,7 @@ class HuggingFaceCLIP(nn.Module):
     def to(self, device):
         # self.image_encoder.to(device)
         self.model.to(device)
+        self.device = device
         return self
 
     @property
@@ -156,11 +158,11 @@ class HuggingFaceCLIP(nn.Module):
         return self.tokenizer(texts, padding=True, return_tensors="pt")
 
     def encode_image(self, image: torch.Tensor):
-        return self.model.get_image_features(pixel_values=image)
+        return self.model.get_image_features(pixel_values=image.to(device=self.device))
         # return self.image_encoder(image)
 
     def encode_text(self, input_ids: torch.Tensor, attention_mask: torch.TensorType):
-        return self.model.get_text_features(input_ids=input_ids, attention_mask=attention_mask)
+        return self.model.get_text_features(input_ids=input_ids.to(device=self.device), attention_mask=attention_mask.to(device=self.device))
         # return self.text_encoder(input_ids, attention_mask)
 
     def encode_images(self, images: Union[List[PILImage], PILImage], batch_size: Optional[int] = None,

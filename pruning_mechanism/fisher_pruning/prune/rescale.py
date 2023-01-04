@@ -126,7 +126,6 @@ def get_ffn_lstsq(
 
         # Get the outputs of the student model
         with MaskNeurons(model, student_neuron_mask):
-            breakpoint()
             lo = layer(student_batch[0], None, None, head_mask=student_batch[2])
         hidden_states, = inputs.pop(0) # removed , input_tensor
         residual, = residuals.pop(0)
