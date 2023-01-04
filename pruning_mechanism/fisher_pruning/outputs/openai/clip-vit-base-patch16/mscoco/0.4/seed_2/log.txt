@@ -1,0 +1,12 @@
+01/04/2023 17:42:36 - INFO - __main__ - Namespace(model_name='openai/clip-vit-base-patch16', task_name='mscoco', output_dir='outputs/openai/clip-vit-base-patch16/mscoco/0.4/seed_2', gpu=1, constraint=0.4, num_samples=8192, seed=2)
+01/04/2023 17:42:36 - INFO - __main__ - Seed number: 2
+01/04/2023 18:20:41 - INFO - __main__ - Namespace(model_name='openai/clip-vit-base-patch16', task_name='mscoco', output_dir='outputs/openai/clip-vit-base-patch16/mscoco/0.4/seed_2', gpu=1, constraint=0.4, num_samples=8192, seed=2)
+01/04/2023 18:20:41 - INFO - __main__ - Seed number: 2
+01/04/2023 21:32:46 - INFO - __main__ - Namespace(model_name='openai/clip-vit-base-patch16', task_name='mscoco', output_dir='outputs/openai/clip-vit-base-patch16/mscoco/0.4/seed_2', gpu=1, constraint=0.4, num_samples=8192, seed=2)
+01/04/2023 21:32:46 - INFO - __main__ - Seed number: 2
+01/04/2023 22:17:05 - INFO - __main__ - Pruned Model MAC: 40.00 %
+01/04/2023 23:09:15 - INFO - __main__ - mscoco Pruning time (s): 5574.016781568527
+01/04/2023 23:15:21 - INFO - __main__ - Losses for head mask only: [tensor(0.5698, device='cuda:0'), tensor(1.7188, device='cuda:0'), tensor(1.8548, device='cuda:0'), tensor(1.3618, device='cuda:0'), tensor(1.2321, device='cuda:0'), tensor(3.1218, device='cuda:0'), tensor(0.9670, device='cuda:0'), tensor(1.7015, device='cuda:0')]
+01/04/2023 23:15:21 - INFO - __main__ - Losses for neuron mask only: [tensor(5.6517, device='cuda:0'), tensor(2.8523, device='cuda:0'), tensor(4.4838, device='cuda:0'), tensor(5.5141, device='cuda:0'), tensor(6.0984, device='cuda:0'), tensor(3.6817, device='cuda:0'), tensor(5.0804, device='cuda:0'), tensor(4.0594, device='cuda:0')]
+01/04/2023 23:15:21 - INFO - __main__ - Losses for both masks: [tensor(6.9053, device='cuda:0'), tensor(4.1515, device='cuda:0'), tensor(4.5873, device='cuda:0'), tensor(5.5861, device='cuda:0'), tensor(7.3828, device='cuda:0'), tensor(5.3019, device='cuda:0'), tensor(6.3176, device='cuda:0'), tensor(4.9454, device='cuda:0')]
+01/04/2023 23:15:21 - INFO - __main__ - Losses for random binary masks with same number of zeros:  [tensor(4.2310, device='cuda:0'), tensor(3.7435, device='cuda:0'), tensor(3.8378, device='cuda:0'), tensor(3.9310, device='cuda:0'), tensor(4.5158, device='cuda:0'), tensor(3.7956, device='cuda:0'), tensor(3.8521, device='cuda:0'), tensor(3.0124, device='cuda:0')]
