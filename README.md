@@ -136,14 +136,14 @@ The result will be printed in the console and also in the corresponding log file
   python run.py --name 2lvl_sensitivity_topk_77 # for the topk experiment
   python run.py --name 2lvl_sensitivity_speedup_77 # for the speedup experiment
   ```
-    
+  
 - Sensitivity(132 heads pruned)
 
   ```bash
   python run.py --name 2lvl_sensitivity_topk_132 # for the topk experiment
   python run.py --name 2lvl_sensitivity_speedup_132 # for the speedup experiment
   ```
-    
+  
 - Fisher(mac_constraint = 0.65)
 
   ```bash
@@ -160,7 +160,7 @@ The result will be printed in the console and also in the corresponding log file
 python visualize.py
 ````
 
-The output image will be the `visualization/visualization_huggingface_flip.(pgf/png)`
+The output image will be the [`visualization/visualization_huggingface_flip.(pgf/png)`](visualization/visualization_huggingface_flip.png)
 
 ### Customize Distillation
 
@@ -188,149 +188,37 @@ The output image will be the `visualization/visualization_huggingface_flip.(pgf/
   pyton run.py --name distilling_resnet50
   ```
 
-### Costumize Fisher Pruning
+### Custumize Fisher Pruning
 
-Follow the instructions from pruning_mechanism/README.md.
+Follow the [instructions](pruning_mechanism/README.md) from pruning_mechanism/README.md.
 
 ## Layout
+ <details><summary><strong>datasets</strong>: all dataset</summary>
+  <p>
+  <ul>
+  <li><em>mscoco.py</em> : MSCOCO dataset</li>
+  <li><em>flickr30.py</em> ：Flickr30 dataset</li>
+  </ul>
+  </p>
+  </details>
 
-TODO: Make prettier
+<details><summary><strong>models</strong>: all CLIP models</summary>
+  <p>
+  <ul>
+  <li> <em> huggingface_clip.py</em>: HuggingFace version of CLIP </li>
+  <li> <em>openai_clip.py</em>: OpenAI version of CLIP </li>
+  <li> <em>openai_flip.py</em>: OpenAI version of FLIP </li>
+  <li> <em>huggingface_flip.py</em> : HuggingFace version of FLIP </li>
+  <li> <em>huggingface_pruned_clip.py</em>: HuggingFace version of PrunedCLIP </li>
+  </ul>
+  </p>
+</details>  
 
-- **datasets**: all dataset
-  - mscoco
-  - flickr30
-  - ...
-- **models**:all CLIP models
-  - **huggingface_clip**:HuggingFace version of CLIP
-  - **openai_clip**:OpenAI version of CLIP
-  - **openai_flip**:OpenAI version of FLIP (Mingyuan Chi)
-  - **huggingface_pruned_clip**: HuggingFace version of PrunedCLIP (Lars Graf)
-  - ...
-- **run.py**: main file
-- **config.py**:Basic Configuration for experiement, models and dataset
+**pruning_mechanism**: codes about pruning
 
-## Contribute
+*run.py*: main execution file
 
-### Style Guide
+*config.py*: Basic Configuration for experiement, models and dataset
 
-[Numpy Python Code Style](https://peps.python.org/pep-0008/) which is the PEP-484 style for python
+*visualize.py* : Visualization for the casCLIP(Masking) performance
 
-### New Model
-If you add new model.
-1. you could **add your folder** under `models`.
-
-2. And **import** your model class in `models\__init__.py`
-
-3. Your model class should provide functions
-   - `image_encoder_str`
-    
-      property, a string identify what kind of image encoder it is, (used for cache)
-   
-   - `text_encoder_str`
-    
-      property, a string identify what kind of text encoder it is, (used for cache)
-      
-   - `set_no_grad`
-   
-      **Parameters**
-      
-      - state: bool, default:True
-
-         if state is True, the encoding process should be called inside `torch.with_nograd()` to minize the memory cost.
-
-
-   - `encode_images`
-   
-      **Parameters**
-
-      - images:   
-        
-         Union[List[PILImage], PILImage]
-
-         could input a list of PIL.Image or a single.
-
-         If input a single, the output shape will be [n_emb]
-         
-         else the output will be [n_image, n_emb]
-
-      - batch_size: 
-      
-         Optional[int]
-
-         if batch_size is `None`, it will visit the image iteratively,
-
-         else it will grab them in a dataloader and do it in batch
-
-      - device: 
-        
-         str
-
-         The output device for the embedding
-
-         As the embeding is so big, so sometimes we should store them in cpu rather than gpu
-
-         Of course, the runtime device is different from output device which you can set through `.cpu()`  or `.cuda()`
-
-      - verbose:    
-      
-         bool
-
-         if verbose, the tqdm progress bar will be showed 
-
-         else, the encoding process will keep silent
-
-      **Returns**
-
-      - emb_images: 
-      
-         torch.FloatTensor[n_image, n_emb] or [e_emb]
-      
-         the embedding of the encoded images
-
-   - `encode_texts`
-   
-      **Parameters**
-
-      - texts:      
-      
-         Union[List[str], str]
-
-         could input a list of str or a single.
-
-         If input a single, the output shape will be [n_emb]
-
-         else the output will be [n_text, n_emb]
-
-      - batch_size: 
-      
-         Optional[int]
-
-         if batch_size is `None`, it will visit the text iteratively,
-
-         else it will grab them in a dataloader and do it in batch
-
-      - device:     
-       
-         str
-
-         The output device for the embedding
-
-         As the embeding is so big, so sometimes we should store them in cpu rather than gpu
-
-         Of course, the runtime device is different from output device which you can set through `.cpu()`  or `.cuda()`
-
-      - verbose:    
-        
-         bool
-
-         if verbose, the tqdm progress bar will be showed 
-
-         else, the encoding process will keep silent
-
-      **Returns**
-      
-      - emb_texts:  
-      
-         torch.FloatTensor[n_text, n_emb] or [e_emb]
-      
-         the embedding of the encoded texts
