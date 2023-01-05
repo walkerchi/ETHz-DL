@@ -144,7 +144,7 @@ The result will be printed in the console and also in the corresponding log file
   python run.py --name 2lvl_sensitivity_speedup_132 # for the speedup experiment
   ```
   
-- Fisher(mac_constraint = 0.65)
+- Fisher(mac_constraint = 0.75)
 
   ```bash
   cd pruning_mechanism
