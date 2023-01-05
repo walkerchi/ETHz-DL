@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 CAPS_PATH = pathlib.Path(__file__).parent.resolve() / "annotations_trainval2017" / \
     "annotations" / "captions_train2017.json"
-IMGS_DIR = pathlib.Path(__file__).parent.resolve() / "/cluster/scratch/largraf/train2017"
+IMGS_DIR = pathlib.Path(__file__).parent.resolve() / "train2017"
 
 
 class MSCOCO(Dataset):

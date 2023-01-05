@@ -14,8 +14,8 @@ from tqdm import tqdm
 def main():
     # load pruned and unpruned model
     device = 'cpu'
-    seed = 0
-    restriction = 0.65
+    seed = 2
+    restriction = 0.75
     model_name = f'vitB16_pruned_{restriction}_{seed}.pt'
     pruned_model = torch.load(f'pruned_models/{model_name}',
                               map_location=torch.device(device))

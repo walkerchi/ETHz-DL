@@ -29,11 +29,12 @@ To run the pruning mechanism on the Model 'openai/clip-vit-base-patch16' and the
 ### 2.1 Generating the masks
 ```bash
 cd fisher_pruning
-python3 main.py --num_samples 8192 --constraint 0.65 --seed 0
+python3 main.py --gpu 1 --num_samples 8192 --constraint 0.75 --seed 1
 ```
 
-This will use 8192 samples from mscoco and try to reduce the FLOP constraint to 65%.
-The calculations are based on a constant number of patches.
+This will use 8192 samples from mscoco and reduces the total number of FLOPs to 75%.
+To run this a GPU with 16 GB of memory is required. If no GPU is available, the --gpu option can be set to 0. 
+In that case it will take a long time to run the pruning mechanism.
 The resulting head and neuron masks will be stored in fisher_pruning/outputs/openai/clip-vit-base-patch16/mscoco/0.65/seed_0/.
 
 ### 2.2 Create the pruned model 
@@ -49,6 +50,6 @@ if the pruning name in the experiment toml file is adjusted to the file name of 
 
 ## 3. Reproducing the results from the paper of this main project
 
-To reproduce the results, follow the instructions above, with the exact same settings (8192 samples, constraint 0.65 and seed 0).
+To reproduce the results, follow the instructions above, with the exact same settings (8192 samples, constraint 0.75 and seed 1).
 Note: Running this code will overwrite the original output files.
 

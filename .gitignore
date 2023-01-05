@@ -19,6 +19,7 @@ test*
 models/huggingface_pruned_clip/pruned_models
 pruning_machanism/__pycache__
 pruning_machanism/fisher_pruning/dataset/val2017/*
+pruning_machanism/fisher_pruning/dataset/train2017/*
 pruning_machanism/fisher_pruning/dataset/annotations_trainval2017/*
 pruning_machanism/fisher_pruning/dataset/__pycache__/
 pruning_machanism/pruned_models/*

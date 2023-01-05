@@ -26,8 +26,8 @@ if __name__ == "__main__":
     config = model.config.vision_config
     # load masks
     base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch16/mscoco/'
-    restriction = '0.65'
-    seed = 0
+    restriction = '0.75'
+    seed = 1
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt',
                            map_location=torch.device('cpu'))
     neuron_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/neuron_mask.pt',
@@ -48,7 +48,6 @@ if __name__ == "__main__":
         shuffle=False,
         pin_memory=True,
     )
-
     # Test the model in different variations.
     losses = test_model(model, head_mask, neuron_mask, test_dataloader,
                         torch.device('cpu'))
