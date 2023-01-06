@@ -51,7 +51,7 @@ if the pruning name in the experiment toml file is adjusted to the file name of 
 
 ## 3. Reproducing the results from the paper of this main project
 
-To reproduce the results, follow the instructions above, with the exact same settings (8192 samples, constraints 0.60 and 0.20 and seed 1).
+To reproduce the results, follow the instructions above, with the exact same settings (8192 samples, constraints 0.40 and 0.75 and seed 1).
 Note: Running this code will overwrite the original output files.
 
 # Sensitivity-based Pruning
