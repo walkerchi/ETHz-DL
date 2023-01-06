@@ -17,13 +17,7 @@ for Efficient Image Search*.
 
 ### System
 
-We tested this code on a machine with the following specs:
-
-| Operating System | Ubuntu 20.04 |
-|---|---|
-| CPU | Intel Core i7-11800H @ 2.30GHz |
-| Memory | 32 GB |
-| GPU | None |
+We tested this code on a workstation in the ETH Euler cluster with 32 cores of an AMD EPYC 7742 CPU and 128 Gigabytes of RAM.
 
 ### Software
 
@@ -56,113 +50,12 @@ We tested this code on a machine with the following specs:
 
    The images are in `datasets/flickr30/flickr30k_images/\d+.jpg`
 
-## Usage
+### Models
 
-The directory `experiments` stores the specification of each experiment in a `.toml` config file.
+#### Distillation
 
-To run experiment `experiments/<EXPERIMENT>.toml`, execute
-
-```sh
-python run.py --name <EXPERIMENT>
-```
-
-The previous command logs results to `.log/<EXPERIMENT>/<time-of-execution>.log`.
-
-
-## Reproduction
-
-First, make sure that you satisfy all prerequisites in Section *Prerequisites*.
-
-The pruned models can be downloaded at https://polybox.ethz.ch/index.php/s/1N8tNyRPRlRZDAq .
-
-### Table 1
-
-*you could also change the device setting to `cuda:0` and increase the `batch_size` in the corresponding .toml file to accelerate the evalutation*
-
-The result will be printed in the console and also in the corresponding log file.
-
-- Distillation(MobileNetV3-S)
-
-  ```bash
-  python run.py --name 2lvl_distill_topk_mobilenetv3-S # for the topk experiment
-  python run.py --name 2lvl_distill_speedup_mobilenetv3-S # for the speedup experiment
-  ```
-
-- Distillation(MobilenetV3-L)
-
-  ```bash
-  python run.py --name 2lvl_distill_topk_mobilenetv3-L # for the topk experiment
-  python run.py --name 2lvl_distill_speedup_mobilenetv3-L # for the speedup experimennt
-  ```
-
-- Distillation(ResNet34)
-
-  ```bash
-  python run.py --name 2lvl_distill_topk_resnet34 # for the topk experiment
-  python run.py --name 2lvl_distill_speedup_resnet34 # for the speedup experiment
-  ```
-
-- Distillation(ResNet50)
-
-  ```bash
-  python run.py --name 2lvl_distill_topk_resnet50 # for the topk experiment
-  python run.py --name 2lvl_distill_speedup_resnet50 # for the speedup experiment
-  ```
-
-- Masking(p1 = 0.5)
-
-  ```bash
-  python run.py --name 2lvl_flip_topk_2x # for the topk experiment
-  python run.py --name 2lvl_flip_speedup_2x # for the speedup experiment
-  ```
-
-- Masking(p1 = 0.74)
-
-  ```bash
-  python run.py --name 2lvl_flip_topk_3x # for the topk experiment
-  python run.py --name 2lvl_flip_speedup_3x # for the speedup experiment
-  ```
-  
-- Sensitivity(22 heads pruned)
-
-  ```bash
-  python run.py --name 2lvl_sensitivity_topk_22 # for the topk experiment
-  python run.py --name 2lvl_sensitivity_speedup_22 # for the speedup experiment
-  ```
-  
-- Sensitivity(77 heads pruned)
-
-  ```bash
-  python run.py --name 2lvl_sensitivity_topk_77 # for the topk experiment
-  python run.py --name 2lvl_sensitivity_speedup_77 # for the speedup experiment
-  ```
-  
-- Sensitivity(132 heads pruned)
-
-  ```bash
-  python run.py --name 2lvl_sensitivity_topk_132 # for the topk experiment
-  python run.py --name 2lvl_sensitivity_speedup_132 # for the speedup experiment
-  ```
-  
-- Fisher(mac_constraint = 0.75)
-
-  ```bash
-  cd pruning_mechanism
-  python actual_pruning.py
-  cd ..
-  python run.py --name 2lvl_fisher_topk # for the topk experiment
-  python run.py --name 2lvl_fisher_speedup # for the speedup experiment
-  ```
-  
-### Figure 3
-
-````bash
-python visualize.py
-````
-
-The output image will be the [`visualization/visualization_huggingface_flip.(pgf/png)`](visualization/visualization_huggingface_flip.png)
-
-### Customize Distillation
+The following instructions create all distilled models
+necessary for our experiments.
 
 - MobileNetV3-S
 
@@ -188,37 +81,84 @@ The output image will be the [`visualization/visualization_huggingface_flip.(pgf
   pyton run.py --name distilling_resnet50
   ```
 
-### Custumize Fisher Pruning
+#### Fisher Pruning
 
-Follow the [instructions](pruning_mechanism/README.md) from pruning_mechanism/README.md.
+To create the pruned models necessary for our experiments, follow the instructions in [ pruning_mechanism/README.md](pruning_mechanism/README.md).
+
+
+## Usage
+
+The directory `experiments` stores the specification of each experiment in a `.toml` config file.
+
+To run experiment `experiments/<EXPERIMENT>.toml`, execute
+
+```sh
+python run.py --name <EXPERIMENT>
+```
+
+The previous command logs results to `.log/<EXPERIMENT>/<time-of-execution>.log`.
+
+*Tip: To accelerate experiments that measure model accuracy, set `device = 'cuda:0'`  and increase `batch_size` in the <EXPERIMENT.toml.*
+
+
+## Reproduction
+
+First, make sure that you satisfy all prerequisites in Section *Prerequisites*.
+
+### Table 1
+| Method | Top-k  < EXPERIMENT > .toml | Speedup < EXPERIMENT > .toml |
+|---|---|---|
+| No Cascade | 2lvl_noscacade_topk | 2lvl_noscacade_speedup |
+| Model Retraining | 2lvl_retraining_speedup | 2lvl_retraining_topk |
+| Fisher Pruning (p=0.6) | 2lvl_fisher_topk_0.6 | 2lvl_fisher_speedup_0.6 |
+| Fisher Pruning (p=0.25) | 2lvl_fisher_topk_0.2 | 2lvl_fisher_speedup_0.2 |
+| Sensitivity Pruning (p=0.17) | 2lvl_sensitivity_topk_22 | 2lvl_sensitivity_speedup_22 |
+| Sensitivity Pruning (p=1) | 2lvl_sensitivity_speedup_132 | 2lvl_sensitivity_speedup_132 |
+| Distillation (MobileNet) | 2lvl_distill_topk_mobilenetv3-S | 2lvl_distill_speedup_mobilenetv3-S |
+| Distillation (ResNet) | 2lvl_distill_topk_resnet50 | 2lvl_distill_speedup_resnet50 |
+| Masking (p=0.5) | 2lvl_masking_topk_2x | 2lvl_masking_speedup_2x |
+| Masking (p=0.74) | 2lvl_masking_topk_3x | 2lvl_masking_speedup_3x |
+
+### Table 2
+
+| Method | Top-k <EXPERIMENT>.toml | Speedup <EXPERIMENT>.toml |
+|---|---|---|
+| No Cascade | 2lvl_nocascade_topk_flickr30k | / |
+| Model Retraining | 2lvl_retraining_topk_flickr30k | 2lvl_retraining_speedup_flickr30k |
+| Input Masking $p_1=0.5$ | 2lvl_masking_topk_2x_flickr30k | 2lvl_masking_speedup_2x_flickr30k |
+| Input Masking $p_1=0.74$ | 2lvl_masking_topk_3x_flickr30k | 2lvl_masking_speedup_3x_flickr30k |
+
+### Table 3
+
+| Method | Top-k <EXPERIMENT>.toml | Speedup <EXPERIMENT>.toml |
+|---|---|---|
+| 2-level Masking | 2lvl_flip_topk_2x | 2lvl_flip_speedup_2x |
+| 3-level Masking | 3lvl_flip_topk_2x | 3lvl_flip_speedup_2x |
+  
+### Figure 3
+
+Run the following command:
+
+````bash
+python visualize.py
+````
+
+This will write the plot for Figure 3 into the directory
+`visualization`.
+
 
 ## Layout
- <details><summary><strong>datasets</strong>: all dataset</summary>
-  <p>
-  <ul>
-  <li><em>mscoco.py</em> : MSCOCO dataset</li>
-  <li><em>flickr30.py</em> ：Flickr30 dataset</li>
-  </ul>
-  </p>
-  </details>
 
-<details><summary><strong>models</strong>: all CLIP models</summary>
-  <p>
-  <ul>
-  <li> <em> huggingface_clip.py</em>: HuggingFace version of CLIP </li>
-  <li> <em>openai_clip.py</em>: OpenAI version of CLIP </li>
-  <li> <em>openai_flip.py</em>: OpenAI version of FLIP </li>
-  <li> <em>huggingface_flip.py</em> : HuggingFace version of FLIP </li>
-  <li> <em>huggingface_pruned_clip.py</em>: HuggingFace version of PrunedCLIP </li>
-  </ul>
-  </p>
-</details>  
-
-**pruning_mechanism**: codes about pruning
-
-*run.py*: main execution file
-
-*config.py*: Basic Configuration for experiement, models and dataset
-
-*visualize.py* : Visualization for the casCLIP(Masking) performance
-
+```
+├── config.py         
+├── datasets          # Stores MSCOCO Flickr30k.
+├── experiments       # Stores experiment configuration files.
+├── LICENCSE
+├── models            # Implements baseline models, FLIP and Distillation.
+├── pruning_mechanism # Implements Pruning.
+├── README.md
+├── requirements.txt
+├── run.py            # Runs experiments. Main interface.
+├── visualization     # Stores output of visualize.py.
+└── visualize.py      # Creates Figure 3.
+```
