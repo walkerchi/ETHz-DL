@@ -44,7 +44,7 @@ To apply the mask and remove all unnecessary weights from the model:
 1. open actual_pruning.py.
 2. Change the variables "restriction" and "seed" on line 67 and 68 according to the masks you want to use.
 3. run the file
-This generates the pruned model and saves it to the folder pruned_models/ with name vitB32_pruned_"restriction"_"seed".pt.
+This generates the pruned model and saves it to the folder pruned_models/ with name vitB16_pruned_"restriction"_"seed".pt.
 The pruned model can be used as part of an experiment in the main project,
 if the pruning name in the experiment toml file is adjusted to the file name of the model.
 
