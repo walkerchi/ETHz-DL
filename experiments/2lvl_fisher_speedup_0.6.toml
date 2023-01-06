@@ -19,7 +19,7 @@ layout    = 'image-caption[0]'
 
 [models.0.kwargs]
 model_str = 'openai/clip-vit-base-patch16'
-pruning_version = '<path to your fisher-pruned model with p=0.6>'
+pruning_version = '<path to your fisher-pruned model with p=0.6 (constraint=0.4)>'
 
 [models.1.kwargs]
 model_str = 'openai/clip-vit-base-patch16'

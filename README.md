@@ -113,7 +113,7 @@ that you want to reproduce involves a pretraining step, make sure to edit the co
 | No Cascade | 2lvl_nocascade_topk | 2lvl_nocascade_speedup |
 | Model Retraining | 2lvl_retraining_topk | 2lvl_retraining_speedup |
 | Fisher Pruning (p=0.6) | 2lvl_fisher_topk_0.6 | 2lvl_fisher_speedup_0.6 |
-| Fisher Pruning (p=0.25) | 2lvl_fisher_topk_0.2 | 2lvl_fisher_speedup_0.2 |
+| Fisher Pruning (p=0.25) | 2lvl_fisher_topk_0.25 | 2lvl_fisher_speedup_0.25 |
 | Sensitivity Pruning (p=0.17) | 2lvl_sensitivity_topk_22 | 2lvl_sensitivity_speedup_22 |
 | Sensitivity Pruning (p=1) | 2lvl_sensitivity_topk_132 | 2lvl_sensitivity_speedup_132 |
 | Distillation (MobileNet) | 2lvl_distill_topk_mobilenetv3-S | 2lvl_distill_speedup_mobilenetv3-S |
