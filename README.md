@@ -125,8 +125,8 @@ First, make sure that you satisfy all prerequisites in Section *Prerequisites*.
 |---|---|---|
 | No Cascade | 2lvl_nocascade_topk_flickr30k | / |
 | Model Retraining | 2lvl_retraining_topk_flickr30k | 2lvl_retraining_speedup_flickr30k |
-| Input Masking $p_1=0.5$ | 2lvl_masking_topk_2x_flickr30k | 2lvl_masking_speedup_2x_flickr30k |
-| Input Masking $p_1=0.74$ | 2lvl_masking_topk_3x_flickr30k | 2lvl_masking_speedup_3x_flickr30k |
+| Input Masking (p=0.5) | 2lvl_masking_topk_2x_flickr30k | 2lvl_masking_speedup_2x_flickr30k |
+| Input Masking (p=0.74) | 2lvl_masking_topk_3x_flickr30k | 2lvl_masking_speedup_3x_flickr30k |
 
 ### Table 3
 
