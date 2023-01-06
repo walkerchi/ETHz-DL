@@ -81,7 +81,7 @@ necessary for our experiments.
   pyton run.py --name distilling_resnet50
   ```
 
-#### Fisher Pruning
+#### Fisher Pruning and Sensitivity Pruning
 
 To create the pruned models necessary for our experiments, follow the instructions in [ pruning_mechanism/README.md](pruning_mechanism/README.md).
 
