@@ -103,17 +103,19 @@ The previous command logs results to `.log/<EXPERIMENT>/<time-of-execution>.log`
 
 ## Reproduction
 
-First, make sure that you satisfy all prerequisites in Section *Prerequisites*.
+First, make sure that you satisfy all prerequisites in Section *Prerequisites*. If the experiment
+that you want to reproduce involves a pretraining step, make sure to edit the corresponding
+`<EXPERIMENT>.toml` file to point to the pre-trained model.
 
 ### Table 1
 | Method | Top-k  < EXPERIMENT > .toml | Speedup < EXPERIMENT > .toml |
 |---|---|---|
 | No Cascade | 2lvl_nocascade_topk | 2lvl_nocascade_speedup |
-| Model Retraining | 2lvl_retraining_speedup | 2lvl_retraining_topk |
+| Model Retraining | 2lvl_retraining_topk | 2lvl_retraining_speedup |
 | Fisher Pruning (p=0.6) | 2lvl_fisher_topk_0.6 | 2lvl_fisher_speedup_0.6 |
 | Fisher Pruning (p=0.25) | 2lvl_fisher_topk_0.2 | 2lvl_fisher_speedup_0.2 |
 | Sensitivity Pruning (p=0.17) | 2lvl_sensitivity_topk_22 | 2lvl_sensitivity_speedup_22 |
-| Sensitivity Pruning (p=1) | 2lvl_sensitivity_speedup_132 | 2lvl_sensitivity_speedup_132 |
+| Sensitivity Pruning (p=1) | 2lvl_sensitivity_topk_132 | 2lvl_sensitivity_speedup_132 |
 | Distillation (MobileNet) | 2lvl_distill_topk_mobilenetv3-S | 2lvl_distill_speedup_mobilenetv3-S |
 | Distillation (ResNet) | 2lvl_distill_topk_resnet50 | 2lvl_distill_speedup_resnet50 |
 | Masking (p=0.5) | 2lvl_masking_topk_2x | 2lvl_masking_speedup_2x |
