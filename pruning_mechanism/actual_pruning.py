@@ -1,4 +1,5 @@
 import time
+import os
 import torch
 from torch.utils.data import DataLoader
 from transformers import (
@@ -92,6 +93,8 @@ if __name__ == '__main__':
     base_folder = 'fisher_pruning/outputs/openai/clip-vit-base-patch16/mscoco/'
     restriction = '0.75'
     seed = 1
+    if not os.path.exists('pruned_models'):
+        os.makedirs('pruned_models')
     save_path = f'pruned_models/vitB16_pruned_{restriction}_{seed}.pt'
     head_mask = torch.load(f'{base_folder}{restriction}/seed_{seed}/head_mask.pt',
                            map_location=torch.device('cpu'))
