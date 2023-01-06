@@ -24,12 +24,12 @@ from utils.schedule import get_pruning_schedule
 logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_name", type=str, default='openai/clip-vit-base-patch32')
+parser.add_argument("--model_name", type=str, default='openai/clip-vit-base-patch16')
 parser.add_argument("--task_name", type=str, default='mscoco', choices=[
     "mscoco",
 ])
 parser.add_argument("--ckpt_dir", type=str, default='ckpt')
-parser.add_argument("--output_dir", type=str, default=None)
+parser.add_argument("--output_dir", type=str, default='outputs')
 parser.add_argument("--gpu", type=int, default=0)
 
 parser.add_argument("--metric", type=str, choices=[
