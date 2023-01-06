@@ -55,7 +55,7 @@ To reproduce the results, follow the instructions above, with the exact same set
 Note: Running this code will overwrite the original output files.
 
 # Sensitivity-based Pruning
-
+This pruning mechanism is based on the paper [Are 16 heads really better than one?](https://arxiv.org/abs/1905.10650). It runs on cpu.
 
 ## 1. Setup
 ### 1.1 Python Requirements
@@ -77,23 +77,22 @@ To run the pruning mechanism on the Model 'openai/clip-vit-base-patch16' and the
 ### 2.1 Generating the masks
 ```bash
 cd fisher_pruning
-python3 main_16.py --gpu 1 --output_dir output
+python3 main_16.py --output_dir outputs
 ```
 This will iteratively prune the layers and produce 12 different head masks at the dir output.
-If no GPU is available, the --gpu option can be set to 0. 
 
 
 ### 2.2 Create the pruned model 
 
 The method from above only generated the pruning masks. 
 To apply the mask and remove all unnecessary weights from the model:
-1. open actual_pruning.py.
-2. Change the variables "restriction" and "seed" on line 67 and 68 according to the masks you want to use.
-3. run the file
-This generates the pruned model and saves it to the folder pruned_models/ with name vitB16_pruned_"restriction"_"seed".pt.
+1. open actual_pruning_16.py.
+2. Change the variables "pruned_layers" and "path_to_mask" on line 81 and 83 according to the masks you want to use.
+3. run the file with python3
+This generates the pruned model and saves it to the folder pruned_models/ with name vitB16_pruned_sensitivity_{pruned_layers * 11}.pt.
 The pruned model can be used as part of an experiment in the main project,
 if the pruning name in the experiment toml file is adjusted to the file name of the model.
 
 ## 3. Reproducing the results from the paper of this main project
 
-To reproduce the results, follow the instructions above and move the pruned model to the dir pruned_models
+To reproduce the results, follow the instructions above.
