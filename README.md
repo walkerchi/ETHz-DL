@@ -108,7 +108,7 @@ First, make sure that you satisfy all prerequisites in Section *Prerequisites*.
 ### Table 1
 | Method | Top-k  < EXPERIMENT > .toml | Speedup < EXPERIMENT > .toml |
 |---|---|---|
-| No Cascade | 2lvl_noscacade_topk | 2lvl_noscacade_speedup |
+| No Cascade | 2lvl_nocascade_topk | 2lvl_nocascade_speedup |
 | Model Retraining | 2lvl_retraining_speedup | 2lvl_retraining_topk |
 | Fisher Pruning (p=0.6) | 2lvl_fisher_topk_0.6 | 2lvl_fisher_speedup_0.6 |
 | Fisher Pruning (p=0.25) | 2lvl_fisher_topk_0.2 | 2lvl_fisher_speedup_0.2 |
