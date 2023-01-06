@@ -150,8 +150,6 @@ def main():
             head_mask,
         )
 
-        print(head_mask)
-
         end = time.time()
         logger.info(f"{args.task_name} Pruning time (s): {end - start}")
 
