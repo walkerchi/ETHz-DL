@@ -36,7 +36,7 @@ This will use 8192 samples from mscoco and reduces the total number of FLOPs to 
 to p=0.25 from the paper.
 To run this a GPU with 16 GB of memory is required. If no GPU is available, the --gpu option can be set to 0. 
 In that case it will take a long time to run the pruning mechanism.
-The resulting head and neuron masks will be stored in fisher_pruning/outputs/openai/clip-vit-base-patch16/mscoco/0.65/seed_0/.
+The resulting head and neuron masks will be stored in fisher_pruning/outputs/openai/clip-vit-base-patch16/mscoco/0.75/seed_0/.
 
 ### 2.2 Create the pruned model 
 
