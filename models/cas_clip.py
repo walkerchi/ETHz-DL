@@ -6,7 +6,7 @@ from typing import List,Optional
 from PIL.ImageFile import ImageFile as PILImage
 import logging
 
-from .cache import DenseCache, SparseCache
+from .cache import DenseCache, SparseCache, DiskCache
 
 
 class CasCLIP(nn.Module):
@@ -32,8 +32,14 @@ class CasCLIP(nn.Module):
     def build(self, images:List[PILImage], batch_size:Optional[int]=None, verbose:bool=True):
         self.images             = images
         self.base_images_emb    = self.models[0].encode_images(images, batch_size=batch_size, verbose=verbose)
+        self.context            = {}
+        if isinstance(self.base_images_emb, tuple):
+            context, self.base_images_emb = self.base_images_emb
+            if hasattr(self.models[0].image_encoder, "save_context_key") and self.models[0].image_encoder.save_context_key is not None:
+                self.context[self.models[0].image_encoder.save_context_key] = DiskCache(len(images), keys=np.arange(len(images)), values=context, name="runtime_context")
         self.cache_images_emb   = {}
         self.cache_text_emb     = {}
+        
         return self
 
     def get_text_embed(self, index:int, text:str):
@@ -80,9 +86,17 @@ class CasCLIP(nn.Module):
         else:
             if model.image_encoder_str not in self.cache_images_emb:
                 assert images_index is not None, f"You should call the `build` function first to precompute the embedding for first model"
-                images = [self.images[i] for i in images_index]
+                if hasattr(model.image_encoder, "load_context_key") and model.image_encoder.load_context_key is not None:
+                    context = self.context[model.image_encoder.load_context_key]
+                    images  = context[images_index]
+                else:
+                    images = [self.images[i] for i in images_index]
                 images_emb = model.encode_images(images, batch_size=batch_size)
                 # cache[name] = NewCache(len(self.images), keys,  values)
+                if isinstance(images_emb, tuple):
+                    context, images_emb = images_emb
+                    if hasattr(model.image_encoder, "save_context_key") and model.image_encoder.save_context_key is not None:
+                        self.context[model.image_encoder.save_context_key]= DiskCache(len(self.images), images_index, context, name="runtime_context")
                 self.cache_images_emb[model.image_encoder_str] = {
                     "sparse":SparseCache,
                     "dense":DenseCache
@@ -92,9 +106,17 @@ class CasCLIP(nn.Module):
                 # some of image embedding is not computed as it's sparsed stored
                 indexs              = [i for i in images_index  if i not in cache]
                 if len(indexs) > 0:
-                    images              = [self.images[index] for index in indexs]
+                    if hasattr(model.image_encoder, "load_context_key") and model.image_encoder.load_context_key is not None:
+                        context = self.context[model.image_encoder.load_context_key]
+                        images  = context[indexs]
+                    else:
+                        images          = [self.images[index] for index in indexs]
                     partial_images_emb  = model.encode_images(images, batch_size=batch_size)
                     # cache.update(indexes, partial_image_emb)
+                    if isinstance(partial_images_emb, tuple):
+                        context, partial_images_emb = partial_images_emb
+                        if hasattr(model, "save_context_key") and model.save_context_key is not None:
+                            self.context[model.save_context_key][indexs] = context
                     cache[indexs]       = partial_images_emb
                     # cache.get(images_indexs)
                 images_emb          = cache[images_index]
@@ -135,7 +157,7 @@ class CasCLIP(nn.Module):
             text_emb = self.get_text_embed(i, text)
 
             # compute images embedding
-            images_emb = self.get_images_embed(i, candidate)
+            images_emb = self.get_images_embed(i, candidate, batch_size)
 
             # get topm or topk
             scores      = torch.cosine_similarity(images_emb,  text_emb[None, :])

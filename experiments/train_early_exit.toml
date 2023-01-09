@@ -1,0 +1,18 @@
+dataset.name    = 'MSCOCO'
+models.name     = ['HuggingFaceEarlyExitCLIP']
+seed            = 123456789
+logging_level   = 'INFO'
+device          = 'cpu'
+batch_size      = 8
+cache_type      = "sparse"
+experiment      = "train_early_exit"
+
+[dataset.kwargs]
+n_samples = 128
+layout    = 'image-caption[0]'
+
+[models.0.kwargs]
+model_str = "openai/clip-vit-base-patch16"
+epoch     = 4
+lr        = 1e-3
+

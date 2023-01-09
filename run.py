@@ -130,6 +130,16 @@ class Task:
                         device=config.device, verbose=True, logger=logger)
         logger.info(f"Distill Finished")
 
+    @staticmethod
+    def train_early_exit(config: Config):
+        logger = logging.getLogger(config.filename)
+        dataset = config.dataset.build()
+        model  = config.models.build()
+        logger.info("Training Early Stoppping...")
+        model.models[0].image_encoder.train_early_exit(dataset._images, batch_size=config.batch_size, 
+                        device=config.device, verbose=True, logger=logger)
+        logger.info(f"Training Finishied")
+
 
 def main():
     parser = argparse.ArgumentParser(description="""

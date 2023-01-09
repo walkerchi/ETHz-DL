@@ -53,7 +53,7 @@ class HuggingFaceImageEncoder(nn.Module):
         self.visual_projection = model.visual_projection
 
     def preprocess(self, images: List[PILImage]):
-        return self.preprocess(images=images, return_tensors="pt")
+        return self.processor(images=images, return_tensors="pt")['pixel_values']
 
     @property
     def dtype(self):
@@ -121,20 +121,20 @@ class HuggingFaceCLIP(nn.Module):
         super().__init__()
         if not os.path.exists(cache_dir):
             os.mkdir(cache_dir)
-        self.tokenizer = CLIPTokenizer.from_pretrained(
-            model_str, cache_dir=cache_dir)
-        self.processor = CLIPProcessor.from_pretrained(
-            model_str, cache_dir=cache_dir)
-        self.model = CLIPModel.from_pretrained(model_str, cache_dir=cache_dir)
-        device = 'cpu'
-        # self.image_encoder = HuggingFaceImageEncoder(model_str, cache_dir)
-        # self.text_encoder = HuggingFaceTextEncoder(model_str, cache_dir)
+        # self.tokenizer = CLIPTokenizer.from_pretrained(
+        #     model_str, cache_dir=cache_dir)
+        # self.processor = CLIPProcessor.from_pretrained(
+        #     model_str, cache_dir=cache_dir)
+        # self.model = CLIPModel.from_pretrained(model_str, cache_dir=cache_dir)
+        self.device = 'cpu'
+        self.image_encoder = HuggingFaceImageEncoder(model_str, cache_dir)
+        self.text_encoder = HuggingFaceTextEncoder(model_str, cache_dir)
         self.model_str = model_str
         self.no_grad = True
 
     def to(self, device):
-        # self.image_encoder.to(device)
-        self.model.to(device)
+        self.image_encoder.to(device)
+        # self.model.to(device)
         self.device = device
         return self
 
@@ -151,12 +151,11 @@ class HuggingFaceCLIP(nn.Module):
         return self
 
     def preprocess_images(self, images: List[PILImage]):
-        return self.processor(images=images, return_tensors="pt")["pixel_values"]
+        return self.image_encoder.preprocess(images)
 
     def preprocess_texts(self, texts: List[str]):
-        texts = ["a photo of" + text for text in texts]
-        return self.tokenizer(texts, padding=True, return_tensors="pt")
-
+        return self.text_encoder.preprocess(texts)
+        
     def encode_image(self, image: torch.Tensor):
         return self.model.get_image_features(pixel_values=image.to(device=self.device))
         # return self.image_encoder(image)
