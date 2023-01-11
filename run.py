@@ -23,27 +23,42 @@ class Task:
         dataset = config.dataset.build()
         logger = logging.getLogger(config.filename)
 
-        def time_model(model, name):
+        def time_model(model, images, name):
+            """
+                timing a single layer model,
+                model.encode_images(return_timing=True) will return either a time(float) or a tuple (time(float), context(Any))
+                the context will be passed to the next layer of model.
+            """
             img_times = []
             # Measure image encoding time
+            context   = None
             for _ in range(config.n_reps):
                 time = model.encode_images(
-                    dataset.images, batch_size=config.batch_size, verbose=True, return_timing=True)
+                    images, batch_size=config.batch_size, verbose=True, return_timing=True)
+                if isinstance(time, tuple):
+                    time, context = time 
                 img_times.append(time / len(dataset.images))
             img_times = np.array(img_times)
             logger.info(
                 f"{name} img encoding time mean(std), min, max: {img_times.mean():7.3f}({img_times.std():7.3f}), {img_times.min():7.3f}, {img_times.max():7.3f}\n\n")
-            return img_times
+            if context is not None:
+                return img_times, context
+            else:
+                return img_times
 
         def time_models_config(models_config, name):
             total_time = 0
             total_time_per_query = 0
+            context    = None
             for idx in range(len(models_config)):
                 # If multiple models are instantiated at the same time, timing is skewed.
                 # Therefore, only instatiate a single model at a time.
                 # get the first model of the cascade(base) model
                 model = models_config[idx].build().models[0]
-                img_time = time_model(model, f"{name}[{idx}]")
+                images = dataset.images if context is None else context
+                img_time = time_model(model, images, f"{name}[{idx}]")
+                if isinstance(img_time, tuple):
+                    img_time, context = img_time
                 fraction = 1 if idx == 0 else config.f
                 total_time += img_time * fraction
                 if idx > 0:

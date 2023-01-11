@@ -1,18 +1,18 @@
 dataset.name    = 'MSCOCO'
 models.name     = ['HuggingFaceEarlyExitCLIP','HuggingFaceEarlyExitCLIP']
+base_model.name = ['HuggingFaceCLIP']
 topk            = [1, 5, 10]
 topm            = [50]
 seed            = 123456789
 logging_level   = 'INFO'
-# device          = 'cpu'
-# batch_size      = 8
-device          = "cuda:0"
-batch_size      = 64
+device          = 'cpu'
+batch_size      = 8
 cache_type      = "dense"
-experiment      = "topk"
+experiment      = "speedup"
+f               = 0.1
 
 [dataset.kwargs]
-# n_samples = 128
+n_samples = 128
 layout    = 'image-caption[0]'
 
 [models.0.kwargs]
@@ -22,3 +22,6 @@ to_stage = 2
 [models.1.kwargs]
 model_str = "openai/clip-vit-base-patch16"
 from_stage = 2
+
+[base_model.0.kwargs]
+model_str = "openai/clip-vit-base-patch16"

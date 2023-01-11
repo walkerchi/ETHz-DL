@@ -2,17 +2,21 @@ dataset.name    = 'MSCOCO'
 models.name     = ['HuggingFaceEarlyExitCLIP']
 seed            = 123456789
 logging_level   = 'INFO'
-device          = 'cpu'
-batch_size      = 8
+# device          = 'cpu'
+# batch_size      = 8
+device          = "cuda:0"
+batch_size      = 64
 cache_type      = "sparse"
 experiment      = "train_early_exit"
 
 [dataset.kwargs]
-n_samples = 128
 layout    = 'image-caption[0]'
+image_path= '/cluster/scratch/minchi/Semester-1/DeepLearning/Project/datasets/mscoco/train2017'
+ann_path  = '/cluster/scratch/minchi/Semester-1/DeepLearning/Project/datasets/mscoco/annotations_trainval2017/annotations/captions_train2017.json'
+
 
 [models.0.kwargs]
 model_str = "openai/clip-vit-base-patch16"
-epoch     = 4
-lr        = 1e-3
+epoch     = 10
+lr        = 2e-3
 

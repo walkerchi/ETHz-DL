@@ -170,6 +170,7 @@ class HuggingFaceEarlyExitImageEncoder(HuggingFaceImageEncoder):
                 x:                  if project=`True` torch.Tensor[B,n_out]
                                     else              torch.Tensor[B, n_grid^2, n_out]
         """
+        x = x.type(self.dtype).to(self.device)
         if self.from_stage is None:
             with torch.no_grad():
                 x = self.embedding(x)
@@ -209,8 +210,8 @@ class HuggingFaceEarlyExitImageEncoder(HuggingFaceImageEncoder):
                 return tuple(self.caches[i][index] for i in range(4))
 
             def __iter__(self):
-                for cache in self.caches:
-                    assert len(cache) == self.total_len, f"all feature map should be computed first, but only compute {v}/{self.total_len} for {k}"
+                for i,cache in enumerate(self.caches):
+                    assert len(cache) == self.total_len, f"all feature map should be computed first, but only compute {len(cache)}/{self.total_len} for stage{i+1}"
                 return super().__iter__()
 
 
@@ -272,6 +273,8 @@ class HuggingFaceEarlyExitImageEncoder(HuggingFaceImageEncoder):
             start = time.process_time()
 
             for *features,stage4 in loader:
+                if stage4.device != torch.device(device):
+                    stage4 = stage4.to(device)
                 for i, feature in enumerate(features):
                     if feature.device != torch.device(device):
                         feature = feature.to(device)
@@ -323,10 +326,9 @@ class HuggingFaceEarlyExitCLIP(HuggingFaceCLIP):
         if isinstance(images[0], PILImage):
             images = self.preprocess_images(images)
         
-
         if batch_size is not None:
             images = DataLoader(images, batch_size=batch_size)
-        if verbose:
+        if verbose and batch_size is not None:
             images = tqdm(images, total=len(images), desc="Image Encoding")
 
         emb_images = []
@@ -349,11 +351,13 @@ class HuggingFaceEarlyExitCLIP(HuggingFaceCLIP):
 
         end_time = time.process_time()
 
-        if return_timing:
-            return end_time - start_time
-
         emb_images = torch.cat(emb_images, 0)
         ctx_images = torch.cat(ctx_images, 0)
+
+        if return_timing:
+            return end_time - start_time, ctx_images
+
+      
 
         if is_single:
             return ctx_images[0], emb_images[0]

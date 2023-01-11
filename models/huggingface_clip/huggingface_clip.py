@@ -157,12 +157,12 @@ class HuggingFaceCLIP(nn.Module):
         return self.text_encoder.preprocess(texts)
         
     def encode_image(self, image: torch.Tensor):
-        return self.model.get_image_features(pixel_values=image.to(device=self.device))
-        # return self.image_encoder(image)
+        # return self.model.get_image_features(pixel_values=image.to(device=self.device))
+        return self.image_encoder(image)
 
     def encode_text(self, input_ids: torch.Tensor, attention_mask: torch.TensorType):
-        return self.model.get_text_features(input_ids=input_ids.to(device=self.device), attention_mask=attention_mask.to(device=self.device))
-        # return self.text_encoder(input_ids, attention_mask)
+        # return self.model.get_text_features(input_ids=input_ids.to(device=self.device), attention_mask=attention_mask.to(device=self.device))
+        return self.text_encoder(input_ids, attention_mask)
 
     def encode_images(self, images: Union[List[PILImage], PILImage], batch_size: Optional[int] = None,
                       device: str = 'cpu', verbose: bool = False, return_timing: bool = False) -> torch.Tensor:
